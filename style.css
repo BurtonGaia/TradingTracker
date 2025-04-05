@@ -6,7 +6,7 @@ body {
 }
 
 .dashboard-container {
-    max-width: 95%; /* Elargissement du conteneur principal */
+    max-width: 95%;
     margin: 0 auto;
     background-color: #fff;
     padding: 20px;
@@ -20,7 +20,7 @@ h1, h2 {
     margin-bottom: 20px;
 }
 
-.input-section, .tickers-list-section {
+.input-section, .tickers-table-section {
     margin-bottom: 20px;
     padding: 15px;
     border: 1px solid #ddd;
@@ -28,8 +28,7 @@ h1, h2 {
     background-color: #f9f9f9;
 }
 
-.input-section input[type="text"],
-.input-section input[type="number"] {
+.input-section input[type="text"] {
     padding: 10px;
     margin-right: 10px;
     border: 1px solid #ccc;
@@ -51,88 +50,54 @@ h1, h2 {
     background-color: #0056b3;
 }
 
-#tickers-list {
-    list-style: none;
-    padding: 0;
-}
-
-#tickers-list li {
-    display: grid; /* Utilisation de grid pour un meilleur contrôle de la disposition */
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; /* Définition des colonnes */
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-    gap: 10px; /* Espacement entre les colonnes */
-}
-
-#tickers-list li:last-child {
-    border-bottom: none;
-}
-
-.ticker-info {
-    display: flex; /* Pour aligner les spans à l'intérieur */
-    flex-direction: column; /* Affichage des informations sur des lignes */
-    gap: 5px;
-}
-
-.ticker-info span strong {
-    font-weight: bold;
-    margin-right: 5px; /* Un peu d'espace après le label */
-}
-
-.actions-buttons button {
-    padding: 5px 10px;
-    margin-left: 5px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-}
-
-.edit-btn {
-    background-color: #28a745;
-    color: white;
-}
-
-.delete-btn {
-    background-color: #dc3545;
-    color: white;
-}
-
-.edit-form {
-    display: none; /* Initialement caché */
-    grid-column: 1 / -1; /* Prend toute la largeur */
+#tickers-table {
+    width: 100%;
+    border-collapse: collapse;
     margin-top: 10px;
-    padding: 10px;
-    background-color: #f0f8ff; /* Couleur de fond légère pour distinguer */
-    border-radius: 4px;
-    display: grid;
-    grid-template-columns: auto auto auto auto; /* Alignement des labels et inputs */
-    gap: 10px;
-    align-items: center;
 }
 
-.edit-form label {
+#tickers-table th,
+#tickers-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+#tickers-table th {
+    background-color: #f2f2f2;
     font-weight: bold;
 }
 
-.edit-form input[type="number"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-.edit-form button {
-    padding: 8px 12px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+#tickers-body tr {
     transition: background-color 0.3s ease;
 }
 
-.edit-form button:hover {
-    background-color: #0056b3;
+#tickers-body tr:hover {
+    background-color: #f9f9f9;
+}
+
+.action-button {
+    background: none;
+    border: none;
+    padding: 5px;
+    margin-right: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.delete-btn {
+    color: #dc3545;
+}
+
+.edit-btn {
+    color: #007bff;
+}
+
+.edit-input {
+    width: 80px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 0.9em;
 }
