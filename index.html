@@ -8,30 +8,34 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <h1>Mon Dashboard de Trading</h1>
+        <header>
+            <h1>Mon Dashboard de Trading</h1>
+        </header>
 
-        <div class="add-ticker-section">
-            <h2>Ajouter un Ticker</h2>
-            <div class="input-group">
-                <label for="ticker-input">Ticker:</label>
-                <input type="text" id="ticker-input" placeholder="Entrer le ticker">
-            </div>
-            <div class="input-group">
-                <label for="price1">Prix 1:</label>
-                <input type="number" id="price1" placeholder="Entrer le Prix 1">
-            </div>
-            <div class="input-group">
-                <label for="price2">Prix 2:</label>
-                <input type="number" id="price2" placeholder="Entrer le Prix 2">
-            </div>
-            <button id="add-button">Ajouter</button>
-        </div>
+        <main>
+            <section class="watchlist-section">
+                <h2>Ma Watchlist</h2>
+                <ul id="watchlist">
+                    </ul>
+            </section>
 
-        <div class="watchlist-section">
-            <h2>Ma Watchlist</h2>
-            <ul id="watchlist">
-                </ul>
-        </div>
+            <aside class="add-ticker-section">
+                <h3>Ajouter un Ticker</h3>
+                <div class="input-group">
+                    <label for="ticker-input">Ticker:</label>
+                    <input type="text" id="ticker-input" placeholder="Entrer le ticker">
+                </div>
+                <div class="input-group">
+                    <label for="price1">Prix 1:</label>
+                    <input type="number" id="price1" placeholder="Prix 1">
+                </div>
+                <div class="input-group">
+                    <label for="price2">Prix 2:</label>
+                    <input type="number" id="price2" placeholder="Prix 2">
+                </div>
+                <button id="add-button">Ajouter</button>
+            </aside>
+        </main>
     </div>
 
     <script src="script.js"></script>
