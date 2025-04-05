@@ -1,0 +1,107 @@
+.interface-detailed .watchlist-detailed-section {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding-right: 15px;
+}
+
+.interface-detailed .watchlist-detailed-section h2 {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.ticker-card {
+    background-color: #374151;
+    border-radius: 8px;
+    padding: 15px;
+    width: calc(33% - 15px); /* Adjust for desired number of cards per row */
+    min-width: 300px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.ticker-card.alerting {
+    border-left: 5px solid #e53e3e;
+}
+
+.ticker-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.ticker-card-header .ticker {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #64b5f6;
+}
+
+.ticker-card-header .delete-button {
+    background: none;
+    border: none;
+    color: #e53e3e;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.ticker-card-header .delete-button:hover {
+    color: #c53030;
+}
+
+.ticker-card-info {
+    margin-bottom: 10px;
+}
+
+.ticker-card-info p {
+    margin: 5px 0;
+    font-size: 0.95em;
+    color: #f7fafc;
+}
+
+.ticker-card-graph {
+    width: 100%;
+    height: 100px;
+}
+
+.interface-detailed .alerts-panel {
+    flex-grow: 1;
+    padding-left: 15px;
+    overflow-y: auto;
+    border-left: 1px solid #4a5568;
+}
+
+.interface-detailed .alerts-panel h2 {
+    margin-top: 0;
+    color: #cbd5e0;
+    text-align: left;
+    margin-bottom: 10px;
+    font-size: 1.6em;
+    font-weight: 500;
+}
+
+.interface-detailed #active-alerts-detailed {
+    list-style: none;
+    padding: 0;
+}
+
+.interface-detailed #active-alerts-detailed li {
+    background-color: #374151;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 6px;
+    font-size: 0.9em;
+    color: #f7fafc;
+    border-left: 3px solid #e53e3e;
+}
+
+.interface-detailed #active-alerts-detailed li span {
+    font-weight: bold;
+    color: #64b5f6;
+}
