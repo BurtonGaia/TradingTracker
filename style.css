@@ -16,7 +16,7 @@ body {
     display: flex;
     flex-direction: column;
     width: 95vw;
-    max-width: 1200px;
+    max-width: 1400px; /* Increased max-width to accommodate the alerts panel */
     height: 90vh;
     max-height: 900px;
     overflow: hidden;
@@ -60,17 +60,18 @@ header h1 {
 main {
     display: flex;
     flex-grow: 1;
-    padding: 25px;
+    padding: 15px; /* Reduced padding in main */
     overflow: hidden;
 }
 
 .watchlist-section {
-    flex-grow: 1;
+    flex-grow: 2; /* Adjusted flex-grow */
     overflow-y: auto;
+    padding-right: 15px;
 }
 
 .watchlist-section::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 .watchlist-section::-webkit-scrollbar-track {
@@ -79,31 +80,31 @@ main {
 
 .watchlist-section::-webkit-scrollbar-thumb {
     background-color: #4a5568;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 .watchlist-section h2 {
     margin-top: 0;
     color: #cbd5e0;
     text-align: left;
-    margin-bottom: 15px;
-    font-size: 1.8em;
+    margin-bottom: 10px; /* Reduced margin-bottom */
+    font-size: 1.6em;
     font-weight: 500;
 }
 
 .watchlist-header {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 50px;
-    gap: 15px;
-    padding: 10px 15px;
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 30px; /* Reduced width for actions */
+    gap: 10px; /* Reduced gap */
+    padding: 8px 10px;
     color: #a0aec0;
     font-weight: bold;
     border-bottom: 1px solid #4a5568;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* Reduced margin-bottom */
+    font-size: 0.85em;
 }
 
 .watchlist-header span {
-    font-size: 0.9em;
     text-align: left;
 }
 
@@ -118,15 +119,16 @@ main {
 
 #watchlist li {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 50px;
-    gap: 15px;
-    padding: 10px 15px; /* Réduction du padding vertical */
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 30px; /* Reduced width for actions */
+    gap: 10px; /* Reduced gap */
+    padding: 8px 10px; /* Reduced padding */
     border-bottom: 1px solid #4a5568;
     align-items: center;
     background-color: #374151;
-    border-radius: 6px;
-    margin-bottom: 8px; /* Réduction de la marge verticale */
-    min-height: 40px; /* Définir une hauteur minimale pour l'alignement */
+    border-radius: 4px; /* Reduced border-radius */
+    margin-bottom: 6px; /* Reduced margin-bottom */
+    min-height: 30px; /* Reduced min-height */
+    font-size: 0.9em;
 }
 
 #watchlist li:last-child {
@@ -135,12 +137,12 @@ main {
 }
 
 #watchlist li span {
-    font-size: 0.95em;
     color: #f7fafc;
     text-align: left;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 0.9em;
 }
 
 #watchlist li .ticker {
@@ -148,23 +150,79 @@ main {
     color: #64b5f6;
 }
 
+#watchlist li.alerting .ticker::before {
+    content: "!";
+    color: #e53e3e;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
 .delete-button {
     background: none;
     border: none;
     color: #e53e3e;
-    font-size: 1.2em;
+    font-size: 1em;
     cursor: pointer;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     line-height: 1;
 }
 
 .delete-button:hover {
     color: #c53030;
+}
+
+.alerts-panel {
+    flex-grow: 1;
+    padding-left: 15px;
+    overflow-y: auto;
+    border-left: 1px solid #4a5568;
+}
+
+.alerts-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.alerts-panel::-webkit-scrollbar-track {
+    background-color: #2d3748;
+}
+
+.alerts-panel::-webkit-scrollbar-thumb {
+    background-color: #4a5568;
+    border-radius: 3px;
+}
+
+.alerts-panel h2 {
+    margin-top: 0;
+    color: #cbd5e0;
+    text-align: left;
+    margin-bottom: 10px;
+    font-size: 1.6em;
+    font-weight: 500;
+}
+
+#active-alerts {
+    list-style: none;
+    padding: 0;
+}
+
+#active-alerts li {
+    background-color: #374151;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 6px;
+    font-size: 0.9em;
+    color: #f7fafc;
+    border-left: 3px solid #e53e3e;
+}
+
+#active-alerts li span {
+    font-weight: bold;
+    color: #64b5f6;
 }
 
 /* Modal Styles (no changes needed) */
