@@ -2,21 +2,28 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Trading Dashboard</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Dashboard de Trading</h1>
-  <form id="stockForm">
-    <input type="text" id="symbol" placeholder="Symbole (ex: AAPL)" required>
-    <input type="number" id="price1" placeholder="Prix 1 (alerte basse)" step="0.01" required>
-    <input type="number" id="price2" placeholder="Prix 2 (alerte haute)" step="0.01" required>
-    <button type="submit">Ajouter</button>
-  </form>
-
-  <h2>Mes Alertes</h2>
-  <ul id="stockList"></ul>
-
+  <div class="container">
+    <header>
+      <h1>Dashboard de Trading</h1>
+    </header>
+    <section class="input-section">
+      <form id="stockForm">
+        <input type="text" id="symbol" placeholder="Symbole (ex: AAPL)" required>
+        <input type="number" id="price1" placeholder="Seuil bas" step="0.01" required>
+        <input type="number" id="price2" placeholder="Seuil haut" step="0.01" required>
+        <button type="submit">Ajouter</button>
+      </form>
+    </section>
+    <section class="dashboard">
+      <h2>Mes Alertes</h2>
+      <div id="stockList" class="stock-grid"></div>
+    </section>
+  </div>
   <script src="script.js"></script>
 </body>
 </html>
