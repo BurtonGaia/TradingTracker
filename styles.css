@@ -5,120 +5,101 @@
 }
 
 body {
-  font-family: 'Orbitron', sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: #e5e7eb;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f7fafc;
+  color: #2d3748;
 }
 
 .container {
-  max-width: 1300px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 20px;
 }
 
 header {
+  background: #edf2f7;
+  padding: 15px;
   text-align: center;
-  padding: 20px;
-  background: #0f172a;
-  border-bottom: 2px solid #00d4ff;
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+  border-bottom: 1px solid #e2e8f0;
 }
 
 h1 {
-  font-size: 2rem;
-  color: #00d4ff;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  font-size: 1.5rem;
+  color: #4a5568;
 }
 
 .input-section {
-  background: #0f172a;
   padding: 20px;
-  margin: 20px 0;
+  background: #fff;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+  margin: 20px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 form {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   justify-content: center;
 }
 
 input {
   padding: 10px;
-  border: 1px solid #8b5cf6;
+  border: 1px solid #e2e8f0;
   border-radius: 4px;
-  background: #1e293b;
-  color: #e5e7eb;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  background: #f7fafc;
+  color: #4a5568;
 }
 
 input::placeholder {
-  color: #94a3b8;
+  color: #a0aec0;
 }
 
 button {
   padding: 10px 20px;
-  background: linear-gradient(45deg, #00d4ff, #8b5cf6);
+  background: #4299e1;
   color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: background 0.2s;
 }
 
 button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
+  background: #3182ce;
 }
 
 .dashboard {
-  background: #0f172a;
-  padding: 20px;
+  background: #fff;
   border-radius: 8px;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
-}
-
-h2 {
-  font-size: 1.5rem;
-  color: #8b5cf6;
-  text-align: center;
-  margin-bottom: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 10px;
+  border-collapse: collapse;
 }
 
 th, td {
-  padding: 15px;
+  padding: 12px 15px;
   text-align: left;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 th {
-  background: linear-gradient(90deg, #00d4ff, #8b5cf6);
-  color: #fff;
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 1px;
+  background: #edf2f7;
+  color: #4a5568;
+  font-weight: 600;
 }
 
-tr {
-  background: #1e293b;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-tr:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+td {
+  font-size: 0.9rem;
 }
 
 .current-price {
-  color: #00d4ff;
-  font-weight: 600;
+  color: #4299e1;
+  font-weight: 500;
 }
 
 .edit-inputs {
@@ -127,33 +108,27 @@ tr:hover {
 }
 
 .edit-inputs input {
-  width: 70px;
+  width: 60px;
 }
 
 .delete-btn {
-  background: #ff3e3e;
+  background: #e53e3e;
 }
 
 .delete-btn:hover {
-  background: #e63939;
-  box-shadow: 0 0 10px rgba(255, 62, 62, 0.7);
+  background: #c53030;
 }
 
 .edit-btn {
-  background: #8b5cf6;
-  margin-right: 10px;
+  background: #48bb78;
+  margin-right: 5px;
 }
 
 .edit-btn:hover {
-  background: #7c3aed;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.7);
+  background: #38a169;
 }
 
 .combo-yes {
-  color: #00d4ff;
-  font-weight: bold;
-}
-
-.combo-no {
-  color: #ff3e3e;
+  color: #48bb78;
+  font-weight: 500;
 }
