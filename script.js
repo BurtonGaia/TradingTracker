@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const localStorageKey = 'tradingDashboardData';
 
     let tickers = loadTickers(); // Charger les données sauvegardées
+    let editingIndex = -1; // Index de la ligne en cours d'édition
 
     // Fonction pour sauvegarder les tickers dans le localStorage
     function saveTickers() {
@@ -23,92 +24,93 @@ document.addEventListener('DOMContentLoaded', () => {
         tickersBody.innerHTML = '';
         tickers.forEach((ticker, index) => {
             const row = tickersBody.insertRow();
+            row.dataset.index = index; // Stocker l'index dans l'attribut data
 
             const tickerCell = row.insertCell();
-            tickerCell.textContent = ticker.symbol;
-
             const nameCell = row.insertCell();
-            nameCell.textContent = ticker.name || 'N/A';
-
             const priceCell = row.insertCell();
-            priceCell.textContent = ticker.currentPrice || '--';
-
             const price1Cell = row.insertCell();
-            price1Cell.innerHTML = `<span class="editable" data-index="${index}" data-field="price1">${ticker.price1 === null ? '' : ticker.price1}</span>`;
-
             const price2Cell = row.insertCell();
-            price2Cell.innerHTML = `<span class="editable" data-index="${index}" data-field="price2">${ticker.price2 === null ? '' : ticker.price2}</span>`;
-
             const actionsCell = row.insertCell();
-            actionsCell.innerHTML = `
-                <button class="action-button delete-btn" data-index="${index}" title="Supprimer">✖</button>
-            `;
 
-            // Gestionnaire d'événements pour la suppression
-            const deleteButton = actionsCell.querySelector('.delete-btn');
-            deleteButton.addEventListener('click', () => deleteTicker(index));
+            if (editingIndex === index) {
+                row.classList.add('edit-row');
+                tickerCell.innerHTML = `<input type="text" class="edit-input" value="${ticker.symbol}">`;
+                nameCell.textContent = ticker.name || 'N/A'; // Le nom est récupéré à la sauvegarde
+                priceCell.textContent = ticker.currentPrice || '--'; // Prix actuel non modifiable ici
+                price1Cell.innerHTML = `<input type="number" class="edit-input" value="${ticker.price1 === null ? '' : ticker.price1}">`;
+                price2Cell.innerHTML = `<input type="number" class="edit-input" value="${ticker.price2 === null ? '' : ticker.price2}">`;
+                actionsCell.classList.add('edit-actions');
+                actionsCell.innerHTML = `
+                    <button class="save-row-btn" data-index="${index}">Sauvegarder</button>
+                    <button class="cancel-row-btn" data-index="${index}">Annuler</button>
+                `;
+
+                const saveButton = actionsCell.querySelector('.save-row-btn');
+                saveButton.addEventListener('click', () => saveEditedRow(index));
+
+                const cancelButton = actionsCell.querySelector('.cancel-row-btn');
+                cancelButton.addEventListener('click', () => {
+                    editingIndex = -1;
+                    renderTickers();
+                });
+
+            } else {
+                tickerCell.textContent = ticker.symbol;
+                nameCell.textContent = ticker.name || 'N/A';
+                priceCell.textContent = ticker.currentPrice || '--';
+                price1Cell.textContent = ticker.price1 === null ? '' : ticker.price1;
+                price2Cell.textContent = ticker.price2 === null ? '' : ticker.price2;
+                actionsCell.innerHTML = `
+                    <button class="action-button edit-btn" data-index="${index}" title="Modifier">M</button>
+                    <button class="action-button delete-btn" data-index="${index}" title="Supprimer">✖</button>
+                `;
+
+                const editButton = actionsCell.querySelector('.edit-btn');
+                editButton.addEventListener('click', () => startEditRow(index));
+
+                const deleteButton = actionsCell.querySelector('.delete-btn');
+                deleteButton.addEventListener('click', () => deleteTicker(index));
+            }
         });
 
-        addEditableListeners();
         fetchCurrentPrices();
         saveTickers(); // Sauvegarder après chaque rendu
     }
 
-    function addEditableListeners() {
-        const editableSpans = document.querySelectorAll('.editable');
-        editableSpans.forEach(span => {
-            span.addEventListener('click', function() {
-                const index = parseInt(this.dataset.index);
-                const field = this.dataset.field;
-                const currentValue = this.textContent;
-
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.classList.add('edit-input');
-                input.value = currentValue;
-
-                this.replaceWith(input);
-                input.focus();
-
-                input.addEventListener('blur', () => saveEditedValue(index, field, input.value));
-                input.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter') {
-                        input.blur();
-                    } else if (event.key === 'Escape') {
-                        const span = document.createElement('span');
-                        span.classList.add('editable');
-                        span.dataset.index = index;
-                        span.dataset.field = field;
-                        span.textContent = currentValue;
-                        input.replaceWith(span);
-                        addEditableListeners(); // Réattacher l'écouteur au nouveau span
-                    }
-                });
-            });
-        });
+    function startEditRow(index) {
+        editingIndex = index;
+        renderTickers();
     }
 
-    function saveEditedValue(index, field, newValue) {
-        const parsedValue = parseFloat(newValue);
+    async function saveEditedRow(index) {
         const row = tickersBody.rows[index];
-        const cellIndex = field === 'price1' ? 3 : 4;
-        const cell = row.cells[cellIndex];
-        const span = document.createElement('span');
-        span.classList.add('editable');
-        span.dataset.index = index;
-        span.dataset.field = field;
+        const tickerInput = row.querySelector('input[type="text"]');
+        const price1Input = row.querySelector('input[type="number"]:nth-child(1)');
+        const price2Input = row.querySelector('input[type="number"]:nth-child(2)');
 
-        if (!isNaN(parsedValue)) {
-            tickers[index][field] = parsedValue;
-            span.textContent = parsedValue;
-        } else {
-            tickers[index][field] = null;
-            span.textContent = '';
+        if (tickerInput) {
+            const newTicker = tickerInput.value.trim().toUpperCase();
+            const newPrice1 = parseFloat(price1Input.value);
+            const newPrice2 = parseFloat(price2Input.value);
+
+            if (newTicker) {
+                const existingTickerIndex = tickers.findIndex(t => t.symbol === newTicker && t !== tickers[index]);
+                if (existingTickerIndex === -1) {
+                    const name = await fetchAssetName(newTicker);
+                    tickers[index].symbol = newTicker;
+                    tickers[index].name = name;
+                    tickers[index].price1 = isNaN(newPrice1) ? null : newPrice1;
+                    tickers[index].price2 = isNaN(newPrice2) ? null : newPrice2;
+                    editingIndex = -1;
+                    renderTickers();
+                } else {
+                    alert('Ce ticker est déjà suivi.');
+                }
+            } else {
+                alert('Le ticker ne peut pas être vide.');
+            }
         }
-        cell.innerHTML = '';
-        cell.appendChild(span);
-        addEditableListeners();
-        saveTickers();
     }
 
     // Fonction pour récupérer le nom de l'actif via l'API Finnhub
@@ -143,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentPrice = await fetchCurrentPrice(ticker.symbol);
             ticker.currentPrice = currentPrice;
             const row = tickersBody.rows[index];
-            if (row) {
+            if (row && editingIndex !== index) {
                 row.cells[2].textContent = currentPrice;
             }
         }
@@ -169,12 +171,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Supprimer un ticker
+    // Supprimer un ticker (sans confirmation)
     function deleteTicker(index) {
-        if (confirm('Êtes-vous sûr de vouloir supprimer ce ticker ?')) {
-            tickers.splice(index, 1);
-            renderTickers();
+        tickers.splice(index, 1);
+        if (editingIndex === index) {
+            editingIndex = -1; // Sortir du mode édition si la ligne est supprimée
+        } else if (editingIndex > index) {
+            editingIndex--; // Ajuster l'index d'édition si une ligne précédente est supprimée
         }
+        renderTickers();
     }
 
     // Rendu initial des tickers
