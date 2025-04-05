@@ -5,18 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Trading</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style-detailed.css" id="detailed-style" disabled>
 </head>
 <body>
     <div class="dashboard-container">
         <header>
-            <div class="interface-selector">
-                <label for="interface-mode">Interface:</label>
-                <select id="interface-mode">
-                    <option value="simple" selected>Simple</option>
-                    <option value="detailed">Détaillée</option>
-                </select>
-            </div>
             <h1>Mon Dashboard de Trading</h1>
             <button id="toggle-add-ticker" aria-label="Ajouter un nouveau ticker">+</button>
         </header>
@@ -42,7 +34,7 @@
             </div>
         </div>
 
-        <main class="interface-simple">
+        <main>
             <section class="watchlist-section">
                 <h2>Ma Watchlist</h2>
                 <div class="watchlist-header">
@@ -62,22 +54,8 @@
                 </ul>
             </aside>
         </main>
-
-        <main class="interface-detailed" style="display: none;">
-            <section class="watchlist-detailed-section">
-                <h2>Ma Watchlist</h2>
-                <div id="watchlist-detailed">
-                    </div>
-            </section>
-            <aside class="alerts-panel">
-                <h2>Alertes en Cours</h2>
-                <ul id="active-alerts-detailed">
-                </ul>
-            </aside>
-        </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
