@@ -101,3 +101,35 @@ h1, h2 {
     box-sizing: border-box;
     font-size: 0.9em;
 }
+.edit-row {
+    background-color: #e0f7fa !important; /* Couleur pour indiquer la ligne en édition */
+}
+
+.edit-row td input[type="text"],
+.edit-row td input[type="number"] {
+    width: 90%;
+    padding: 5px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 0.9em;
+}
+
+.edit-actions button {
+    padding: 5px 10px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.save-row-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.cancel-row-btn {
+    background-color: #dc3545;
+    color: white;
+}
