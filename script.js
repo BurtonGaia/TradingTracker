@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="cancel-row-btn" data-index="${index}">Annuler</button>
                 `;
 
+                // Ajouter les gestionnaires d'événements ici, après la création des boutons
                 const saveButton = actionsCell.querySelector('.save-row-btn');
                 saveButton.addEventListener('click', () => saveEditedRow(index));
 
