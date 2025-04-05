@@ -2,8 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const addTickerBtn = document.getElementById('add-ticker-btn');
     const tickersList = document.getElementById('tickers-list');
     const newTickerInput = document.getElementById('new-ticker');
-    const price1Input = document.getElementById('price-1');
-    const price2Input = document.getElementById('price-2');
     const finnhubApiKey = 'cvopq21r01qihjtq7uagcvopq21r01qihjtq7ub0'; // Remplacez par votre clé API Finnhub
 
     let tickers = []; // Tableau pour stocker les informations des tickers
@@ -18,16 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span><strong>Ticker:</strong> <span class="ticker-symbol">${ticker.symbol}</span></span>
                     <span><strong>Nom:</strong> <span class="ticker-name">${ticker.name || 'N/A'}</span></span>
                     <span><strong>Prix Actuel:</strong> <span class="current-price">--</span></span>
-                    <span><strong>Prix 1:</strong> <span class="price-1">${ticker.price1}</span></span>
-                    <span><strong>Prix 2:</strong> <span class="price-2">${ticker.price2}</span></span>
+                    <span><strong>Prix 1:</strong> <span class="price-1">${ticker.price1 || ''}</span></span>
+                    <span><strong>Prix 2:</strong> <span class="price-2">${ticker.price2 || ''}</span></span>
                 </div>
                 <div class="actions-buttons">
                     <button class="edit-btn" data-index="${index}">Modifier</button>
                     <button class="delete-btn" data-index="${index}">Supprimer</button>
                 </div>
                 <div class="edit-form" id="edit-form-${index}">
-                    <input type="number" class="edit-price-1" placeholder="Nouveau Prix 1" value="${ticker.price1}">
-                    <input type="number" class="edit-price-2" placeholder="Nouveau Prix 2" value="${ticker.price2}">
+                    <label for="edit-price-1-${index}">Prix 1:</label>
+                    <input type="number" class="edit-price-1" id="edit-price-1-${index}" placeholder="Prix 1" value="${ticker.price1 || ''}">
+                    <label for="edit-price-2-${index}">Prix 2:</label>
+                    <input type="number" class="edit-price-2" id="edit-price-2-${index}" placeholder="Prix 2" value="${ticker.price2 || ''}">
                     <button class="save-edit-btn" data-index="${index}">Sauvegarder</button>
                     <button class="cancel-edit-btn" data-index="${index}">Annuler</button>
                 </div>
@@ -80,26 +80,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Ajouter un nouveau ticker
+    // Ajouter un nouveau ticker (ne demande plus les prix)
     addTickerBtn.addEventListener('click', async () => {
         const newTicker = newTickerInput.value.trim().toUpperCase();
-        const price1 = parseFloat(price1Input.value);
-        const price2 = parseFloat(price2Input.value);
 
-        if (newTicker && !isNaN(price1) && !isNaN(price2)) {
+        if (newTicker) {
             const existingTicker = tickers.find(t => t.symbol === newTicker);
             if (!existingTicker) {
                 const name = await fetchAssetName(newTicker);
-                tickers.push({ symbol: newTicker, name: name, price1: price1, price2: price2 });
+                tickers.push({ symbol: newTicker, name: name, price1: null, price2: null }); // Prix initialisés à null
                 renderTickers();
                 newTickerInput.value = '';
-                price1Input.value = '';
-                price2Input.value = '';
             } else {
                 alert('Ce ticker est déjà suivi.');
             }
         } else {
-            alert('Veuillez saisir un ticker valide et des prix numériques.');
+            alert('Veuillez saisir un ticker valide.');
         }
     });
 
@@ -162,16 +158,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Sauvegarder les modifications du ticker
+    // Sauvegarder les modifications du ticker (Prix 1 et Prix 2)
     function saveEditedTicker(index) {
         const editForm = document.getElementById(`edit-form-${index}`);
         if (editForm) {
-            const newPrice1 = parseFloat(editForm.querySelector('.edit-price-1').value);
-            const newPrice2 = parseFloat(editForm.querySelector('.edit-price-2').value);
+            const newPrice1Input = editForm.querySelector('.edit-price-1');
+            const newPrice2Input = editForm.querySelector('.edit-price-2');
+            const newPrice1 = parseFloat(newPrice1Input.value);
+            const newPrice2 = parseFloat(newPrice2Input.value);
 
-            if (!isNaN(newPrice1) && !isNaN(newPrice2)) {
-                tickers[index].price1 = newPrice1;
-                tickers[index].price2 = newPrice2;
+            if (!isNaN(newPrice1) || !isNaN(newPrice2)) {
+                if (!isNaN(newPrice1)) {
+                    tickers[index].price1 = newPrice1;
+                }
+                if (!isNaN(newPrice2)) {
+                    tickers[index].price2 = newPrice2;
+                }
                 renderTickers();
             } else {
                 alert('Veuillez saisir des prix numériques valides.');
@@ -183,5 +185,5 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTickers();
 
     // Mettre à jour les prix en temps réel (rafraîchissement toutes les quelques secondes)
-    setInterval(fetchCurrentPrices, 5000); // Rafraîchir toutes les 5 secondes (ajustez selon vos besoins et les limites de l'API)
+    setInterval(fetchCurrentPrices, 5000); // Rafraîchir toutes les 5 secondes
 });
