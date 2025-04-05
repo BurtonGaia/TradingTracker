@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editingIndex === index) {
                 row.classList.add('edit-row');
                 tickerCell.innerHTML = `<input type="text" class="edit-input" value="${ticker.symbol}">`;
-                nameCell.textContent = ticker.name || 'N/A'; // Le nom est récupéré à la sauvegarde
-                priceCell.textContent = ticker.currentPrice || '--'; // Prix actuel non modifiable ici
+                nameCell.textContent = ticker.name || 'N/A';
+                priceCell.textContent = ticker.apiPrice || '--'; // Utiliser apiPrice
                 price1Cell.innerHTML = `<input type="number" class="edit-input" value="${ticker.price1 === null ? '' : ticker.price1}">`;
                 price2Cell.innerHTML = `<input type="number" class="edit-input" value="${ticker.price2 === null ? '' : ticker.price2}">`;
                 actionsCell.classList.add('edit-actions');
@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="cancel-row-btn" data-index="${index}">Annuler</button>
                 `;
 
-                // Ajouter les gestionnaires d'événements ici, après la création des boutons
                 const saveButton = actionsCell.querySelector('.save-row-btn');
                 saveButton.addEventListener('click', () => saveEditedRow(index));
 
@@ -59,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 tickerCell.textContent = ticker.symbol;
                 nameCell.textContent = ticker.name || 'N/A';
-                priceCell.textContent = ticker.currentPrice || '--';
+                priceCell.textContent = ticker.apiPrice || '--'; // Utiliser apiPrice
                 price1Cell.textContent = ticker.price1 === null ? '' : ticker.price1;
                 price2Cell.textContent = ticker.price2 === null ? '' : ticker.price2;
                 actionsCell.innerHTML = `
@@ -75,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        fetchCurrentPrices();
+        fetchCurrentApiPrices(); // Utiliser la nouvelle fonction pour les prix API
         saveTickers(); // Sauvegarder après chaque rendu
     }
 
@@ -93,8 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (tickerInput) {
             const newTicker = tickerInput.value.trim().toUpperCase();
-            const newPrice1 = parseFloat(price1Input ? price1Input.value : null); // Vérification si l'input existe
-            const newPrice2 = parseFloat(price2Input ? price2Input.value : null); // Vérification si l'input existe
+            const newPrice1 = parseFloat(price1Input ? price1Input.value : null);
+            const newPrice2 = parseFloat(price2Input ? price2Input.value : null);
 
             console.log('newTicker:', newTicker, 'newPrice1:', newPrice1, 'newPrice2:', newPrice2);
 
@@ -132,29 +131,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Fonction pour récupérer le prix actuel via l'API Finnhub
-    async function fetchCurrentPrice(ticker) {
-        const url = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${finnhubApiKey}`;
+    async function fetchCurrentApiPrice(tickerSymbol) { // Renommée pour plus de clarté
+        const url = `https://finnhub.io/api/v1/quote?symbol=${tickerSymbol}&token=${finnhubApiKey}`;
         try {
             const response = await fetch(url);
             const data = await response.json();
-            return data.c || '--';
+            return data.c || null; // Retourne null si pas de prix
         } catch (error) {
-            console.error(`Erreur lors de la récupération du prix pour ${ticker}:`, error);
-            return '--';
+            console.error(`Erreur lors de la récupération du prix pour ${tickerSymbol}:`, error);
+            return null;
         }
     }
 
-    // Fonction pour mettre à jour les prix actuels affichés
-    async function fetchCurrentPrices() {
+    // Fonction pour mettre à jour les prix actuels affichés (API uniquement)
+    async function fetchCurrentApiPrices() { // Renommée pour plus de clarté
         for (const [index, ticker] of tickers.entries()) {
-            const currentPrice = await fetchCurrentPrice(ticker.symbol);
-            ticker.currentPrice = currentPrice;
+            const currentPrice = await fetchCurrentApiPrice(ticker.symbol);
+            tickers[index].apiPrice = currentPrice; // Mettre à jour apiPrice
             const row = tickersBody.rows[index];
-            if (row) { // Supprimer la condition editingIndex !== index
-                row.cells[2].textContent = currentPrice;
+            if (row) {
+                row.cells[2].textContent = currentPrice === null ? '--' : currentPrice; // Afficher apiPrice
             }
         }
-        saveTickers(); // Sauvegarder après la mise à jour des prix
+        saveTickers(); // Sauvegarder après la mise à jour des prix API
     }
 
     // Ajouter un nouveau ticker
@@ -165,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const existingTickerIndex = tickers.findIndex(t => t.symbol === newTicker);
             if (existingTickerIndex === -1) {
                 const name = await fetchAssetName(newTicker);
-                tickers.push({ symbol: newTicker, name: name, currentPrice: null, price1: null, price2: null });
+                tickers.push({ symbol: newTicker, name: name, apiPrice: null, price1: null, price2: null });
                 renderTickers();
                 newTickerInput.value = '';
             } else {
@@ -190,6 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Rendu initial des tickers
     renderTickers();
 
-    // Mettre à jour les prix en temps réel
-    setInterval(fetchCurrentPrices, 5000);
+    // Mettre à jour les prix en temps réel (API uniquement)
+    setInterval(fetchCurrentApiPrices, 5000);
 });
