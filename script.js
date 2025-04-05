@@ -1,4 +1,4 @@
-const apiKey = 'VOTRE_CLE_API_FINNHUB'; // Remplacez par votre clé API Finnhub
+const apiKey = 'cvopq21r01qihjtq7uagcvopq21r01qihjtq7ub0'; // Remplacez par votre clé API Finnhub
 const toggleAddTickerButton = document.getElementById('toggle-add-ticker');
 const addTickerModal = document.getElementById('add-ticker-modal');
 const closeButton = document.querySelector('.close-button');
