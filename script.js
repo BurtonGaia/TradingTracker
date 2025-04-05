@@ -10,12 +10,11 @@ document.body.appendChild(notificationDiv);
 
 let trackedTickers = loadWatchlist();
 
-// Fonction pour afficher une notification
+// Fonction utilitaire pour afficher une notification
 function showNotification(message, type = 'success', duration = 3000) {
     notificationDiv.textContent = message;
     notificationDiv.className = 'notification';
-    notificationDiv.classList.add('notification', type);
-    notificationDiv.classList.add('show');
+    notificationDiv.classList.add('notification', type, 'show');
     setTimeout(() => {
         notificationDiv.classList.remove('show');
     }, duration);
@@ -74,29 +73,37 @@ async function addTickerToWatchlist() {
         return;
     }
 
-    const companyInfo = await fetchCompanyProfile(selectedTicker);
-    const priceInfo = await fetchCurrentPrice(selectedTicker);
+    try {
+        const [companyInfo, priceInfo] = await Promise.all([
+            fetchCompanyProfile(selectedTicker),
+            fetchCurrentPrice(selectedTicker)
+        ]);
 
-    if (priceInfo.currentPrice === null) {
-        showNotification(`Impossible de récupérer le prix pour ${selectedTicker}. Vérifiez le ticker.`, 'error');
-        return;
+        if (priceInfo.currentPrice === null) {
+            showNotification(`Impossible de récupérer le prix pour ${selectedTicker}. Vérifiez le ticker.`, 'error');
+            return;
+        }
+
+        const newTickerData = {
+            ticker: selectedTicker,
+            name: companyInfo.name,
+            price1: price1,
+            price2: price2,
+            currentPrice: priceInfo.currentPrice
+        };
+
+        trackedTickers.push(newTickerData);
+        saveWatchlist();
+        renderWatchlist();
+
+        tickerInput.value = '';
+        price1Input.value = '';
+        price2Input.value = '';
+
+    } catch (error) {
+        console.error("Erreur lors de l'ajout du ticker:", error);
+        showNotification("Une erreur s'est produite lors de l'ajout du ticker.", 'error');
     }
-
-    const newTickerData = {
-        ticker: selectedTicker,
-        name: companyInfo.name,
-        price1: price1,
-        price2: price2,
-        currentPrice: priceInfo.currentPrice
-    };
-
-    trackedTickers.push(newTickerData);
-    saveWatchlist();
-    renderWatchlist();
-
-    tickerInput.value = '';
-    price1Input.value = '';
-    price2Input.value = '';
 }
 
 // Fonction pour supprimer un ticker de la watchlist
@@ -106,13 +113,14 @@ function removeTicker(tickerToRemove) {
     renderWatchlist();
 }
 
-// Fonction pour mettre à jour le prix actuel et vérifier les seuils
+// Fonction pour mettre à jour les prix actuels et vérifier les seuils
 async function updateCurrentPrices() {
+    const updatedTickers = [];
     for (const item of trackedTickers) {
         const priceInfo = await fetchCurrentPrice(item.ticker);
         if (priceInfo.currentPrice !== null) {
             const oldPrice = item.currentPrice;
-            item.currentPrice = priceInfo.currentPrice.toFixed(2);
+            const currentPrice = priceInfo.currentPrice.toFixed(2);
 
             const thresholdPositive1 = item.price1 * 1.02;
             const thresholdNegative1 = item.price1 * 0.98;
@@ -120,18 +128,21 @@ async function updateCurrentPrices() {
             const thresholdNegative2 = item.price2 * 0.98;
 
             if (oldPrice !== null) {
-                if (item.currentPrice >= thresholdPositive2 && oldPrice < thresholdPositive2) {
+                if (currentPrice >= thresholdPositive2 && oldPrice < thresholdPositive2) {
                     showNotification(`Alerte: ${item.ticker} a atteint ou dépassé +2% de Prix 2 (${item.price2}) !`, 'warning');
-                } else if (item.currentPrice <= thresholdNegative2 && oldPrice > thresholdNegative2) {
+                } else if (currentPrice <= thresholdNegative2 && oldPrice > thresholdNegative2) {
                     showNotification(`Alerte: ${item.ticker} a atteint ou dépassé -2% de Prix 2 (${item.price2}) !`, 'warning');
-                } else if (item.currentPrice >= thresholdPositive1 && oldPrice < thresholdPositive1) {
+                } else if (currentPrice >= thresholdPositive1 && oldPrice < thresholdPositive1) {
                     showNotification(`Alerte: ${item.ticker} a atteint ou dépassé +2% de Prix 1 (${item.price1}) !`, 'warning');
-                } else if (item.currentPrice <= thresholdNegative1 && oldPrice > thresholdNegative1) {
+                } else if (currentPrice <= thresholdNegative1 && oldPrice > thresholdNegative1) {
                     showNotification(`Alerte: ${item.ticker} a atteint ou dépassé -2% de Prix 1 (${item.price1}) !`, 'warning');
                 }
             }
+            item.currentPrice = currentPrice;
         }
+        updatedTickers.push(item);
     }
+    trackedTickers = updatedTickers; // Mise à jour globale après toutes les requêtes
     renderWatchlist();
 }
 
@@ -178,8 +189,3 @@ setInterval(updateCurrentPrices, 10000);
 
 // Affichage initial de la watchlist
 renderWatchlist();
-
-// Auto-refresh de la page toutes les 10 secondes
-setInterval(() => {
-    location.reload();
-}, 10000);
