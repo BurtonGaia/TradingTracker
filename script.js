@@ -1,163 +1,111 @@
-// Charger les stocks depuis LocalStorage
-let stocks = JSON.parse(localStorage.getItem('stocks')) || [];
-const stockList = document.getElementById('stockList');
-const apiKey = 'RZ7U8BGO3JZI1BQV';
+const API_KEY = 'RZ7U8BGO3JZI1BQV';
+const tickerList = document.getElementById('tickerList');
+let tickers = JSON.parse(localStorage.getItem('tickers')) || [];
 
-function saveStocks() {
-  localStorage.setItem('stocks', JSON.stringify(stocks));
-}
-
-function displayStocks() {
-  stockList.innerHTML = '';
-  stocks.forEach((stock, index) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td class="stock-name">Chargement...</td>
-      <td>${stock.symbol}</td>
-      <td><span class="current-price">Chargement...</span></td>
-      <td><span class="price1">${stock.price1}</span><div class="edit-inputs" style="display: none;"><input type="number" class="edit-price1" value="${stock.price1}" step="0.01"></div></td>
-      <td><span class="price2">${stock.price2}</span><div class="edit-inputs" style="display: none;"><input type="number" class="edit-price2" value="${stock.price2}" step="0.01"></div></td>
-      <td class="combo-status"></td>
-      <td>
-        <button class="edit-btn" onclick="toggleEdit(${index})">Modifier</button>
-        <button class="delete-btn" onclick="deleteStock(${index})">Supprimer</button>
-      </td>
-    `;
-    stockList.appendChild(row);
-    fetchData(stock.symbol, row, index);
-  });
-}
-
-// Récupérer les données avec gestion des limites
-async function fetchData(symbol, row, index) {
-  try {
-    // Nom et prix en un appel (GLOBAL_QUOTE ne donne pas le nom, donc SYMBOL_SEARCH d'abord)
-    const nameRes = await fetch(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${symbol}&apikey=${apiKey}`);
-    const nameData = await nameRes.json();
-    const name = nameData.bestMatches?.[0]?.['2. name'] || 'Inconnu';
-    row.querySelector('.stock-name').textContent = name;
-
-    const priceRes = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`);
-    const priceData = await priceRes.json();
-    const price = priceData['Global Quote']?.['05. price'] || 'N/A';
-    row.querySelector('.current-price').textContent = price;
-    if (price !== 'N/A') checkAlerts(symbol, price);
-
-    // Combo (Weekly) - Appels séparés avec attente
-    setTimeout(async () => {
-      try {
-        const weeklyRes = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol=${symbol}&apikey=${apiKey}`);
-        const weeklyData = await weeklyRes.json();
-        const weeklyPrice = parseFloat(Object.entries(weeklyData['Weekly Time Series'])[0][1]['4. close']);
-
-        const ma20Res = await fetch(`https://www.alphavantage.co/query?function=SMA&symbol=${symbol}&interval=weekly&time_period=20&series_type=close&apikey=${apiKey}`);
-        const ma20Data = await ma20Res.json();
-        const ma20 = parseFloat(Object.entries(ma20Data['Technical Analysis: SMA'])[0][1]['SMA']);
-
-        const ma50Res = await fetch(`https://www.alphavantage.co/query?function=SMA&symbol=${symbol}&interval=weekly&time_period=50&series_type=close&apikey=${apiKey}`);
-        const ma50Data = await ma50Res.json();
-        const ma50 = parseFloat(Object.entries(ma50Data['Technical Analysis: SMA'])[0][1]['SMA']);
-
-        const bbRes = await fetch(`https://www.alphavantage.co/query?function=BBANDS&symbol=${symbol}&interval=weekly&time_period=20&series_type=close&nbdevup=2&nbdevdn=2&apikey=${apiKey}`);
-        const bbData = await bbRes.json();
-        const lowerBand = parseFloat(Object.entries(bbData['Technical Analysis: BBANDS'])[0][1]['Lower Band']);
-
-        const isCombo = weeklyPrice < ma20 && weeklyPrice > ma50 && lowerBand >= weeklyPrice * 0.95 && lowerBand <= weeklyPrice * 1.05;
-        row.querySelector('.combo-status').textContent = isCombo ? 'Oui' : '';
-        if (isCombo) row.querySelector('.combo-status').className = 'combo-status combo-yes';
-      } catch (error) {
-        console.error('Erreur Combo:', error);
-        row.querySelector('.combo-status').textContent = '';
-      }
-    }, index * 15000); // Délai progressif pour éviter la limite
-  } catch (error) {
-    console.error('Erreur:', error);
-    row.querySelector('.stock-name').textContent = 'Erreur';
-    row.querySelector('.current-price').textContent = 'N/A';
-  }
-}
-
-// Vérifier les alertes (±2%)
-function checkAlerts(symbol, currentPrice) {
-  const stock = stocks.find(s => s.symbol === symbol);
-  if (stock && currentPrice !== 'N/A') {
-    const price = parseFloat(currentPrice);
-    const lowThreshold = stock.price1 * 0.98;
-    const highThreshold = stock.price2 * 1.02;
-    if (price <= stock.price1 * 1.02 && price >= lowThreshold) {
-      showAlert(`${symbol} proche du seuil bas (${stock.price1}): ${price}`);
-    } else if (price >= stock.price2 * 0.98 && price <= highThreshold) {
-      showAlert(`${symbol} proche du seuil haut (${stock.price2}): ${price}`);
-    }
-  }
-}
-
-// Afficher une alerte
-function showAlert(message) {
-  const alertBox = document.createElement('div');
-  alertBox.style.cssText = `
-    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    background: #e53e3e; color: #fff; padding: 10px 20px; border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000;
-  `;
-  alertBox.textContent = message;
-  document.body.appendChild(alertBox);
-  setTimeout(() => alertBox.remove(), 5000);
-  const audio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
-  audio.play().catch(err => console.log('Erreur son:', err));
-}
-
-// Ajouter un stock
-document.getElementById('stockForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const symbol = document.getElementById('symbol').value.toUpperCase();
-  const price1 = parseFloat(document.getElementById('price1').value);
-  const price2 = parseFloat(document.getElementById('price2').value);
-  stocks.push({ symbol, price1, price2 });
-  saveStocks();
-  displayStocks();
-  document.getElementById('stockForm').reset();
+// Charger les tickers au démarrage
+document.addEventListener('DOMContentLoaded', () => {
+    renderTickers();
+    fetchData();
+    setInterval(fetchData, 3600000); // Rafraîchissement toutes les heures
 });
 
-// Supprimer un stock
-function deleteStock(index) {
-  stocks.splice(index, 1);
-  saveStocks();
-  displayStocks();
+// Ajouter un ticker
+function addTicker() {
+    const ticker = document.getElementById('ticker').value.toUpperCase();
+    const price1 = parseFloat(document.getElementById('price1').value);
+    const price2 = parseFloat(document.getElementById('price2').value);
+
+    if (ticker && price1 && price2) {
+        tickers.push({ ticker, price1, price2 });
+        localStorage.setItem('tickers', JSON.stringify(tickers));
+        renderTickers();
+        fetchData();
+        document.getElementById('ticker').value = '';
+        document.getElementById('price1').value = '';
+        document.getElementById('price2').value = '';
+    }
 }
 
-// Modifier un stock
-function toggleEdit(index) {
-  const row = stockList.children[index];
-  const editInputs = row.querySelectorAll('.edit-inputs');
-  const editBtn = row.querySelector('.edit-btn');
-  const isEditing = editInputs[0].style.display === 'flex';
-
-  if (isEditing) {
-    const newPrice1 = parseFloat(row.querySelector('.edit-price1').value);
-    const newPrice2 = parseFloat(row.querySelector('.edit-price2').value);
-    stocks[index].price1 = newPrice1;
-    stocks[index].price2 = newPrice2;
-    saveStocks();
-    displayStocks();
-  } else {
-    editInputs.forEach(input => input.style.display = 'flex');
-    row.querySelector('.price1').style.display = 'none';
-    row.querySelector('.price2').style.display = 'none';
-    editBtn.textContent = 'Sauvegarder';
-  }
+// Supprimer un ticker
+function deleteTicker(index) {
+    tickers.splice(index, 1);
+    localStorage.setItem('tickers', JSON.stringify(tickers));
+    renderTickers();
+    fetchData();
 }
 
-// Mettre à jour toutes les 60 secondes
-setInterval(() => {
-  stocks.forEach((stock, index) => {
-    const row = stockList.children[index];
-    if (row) fetchData(stock.symbol, row, index);
-  });
-}, 60000);
+// Récupérer les données via AlphaVantage
+async function fetchData() {
+    for (let i = 0; i < tickers.length; i++) {
+        const ticker = tickers[i].ticker;
+        const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${API_KEY}`;
+        const bbUrl = `https://www.alphavantage.co/query?function=BBANDS&symbol=${ticker}&interval=daily&time_period=20&series_type=close&nbdevup=2&nbdevdn=2&apikey=${API_KEY}`;
+        const ma20Url = `https://www.alphavantage.co/query?function=SMA&symbol=${ticker}&interval=daily&time_period=20&series_type=close&apikey=${API_KEY}`;
+        const ma50Url = `https://www.alphavantage.co/query?function=SMA&symbol=${ticker}&interval=daily&time_period=50&series_type=close&apikey=${API_KEY}`;
 
-// Afficher au démarrage
-displayStocks();
+        try {
+            const [priceRes, bbRes, ma20Res, ma50Res] = await Promise.all([
+                fetch(url).then(res => res.json()),
+                fetch(bbUrl).then(res => res.json()),
+                fetch(ma20Url).then(res => res.json()),
+                fetch(ma50Url).then(res => res.json())
+            ]);
 
-window.deleteStock = deleteStock;
-window.toggleEdit = toggleEdit;
+            const currentPrice = parseFloat(priceRes['Time Series (Daily)'][Object.keys(priceRes['Time Series (Daily)'])[0]]['4. close']);
+            const bbLower = parseFloat(bbRes['Technical Analysis: BBANDS'][Object.keys(bbRes['Technical Analysis: BBANDS'])[0]]['Lower Band']);
+            const ma20 = parseFloat(ma20Res['Technical Analysis: SMA'][Object.keys(ma20Res['Technical Analysis: SMA'])[0]]['SMA']);
+            const ma50 = parseFloat(ma50Res['Technical Analysis: SMA'][Object.keys(ma50Res['Technical Analysis: SMA'])[0]]['SMA']);
+
+            tickers[i].currentPrice = currentPrice;
+            tickers[i].ma20 = ma20;
+            tickers[i].ma50 = ma50;
+            tickers[i].bbLower = bbLower;
+            tickers[i].combo = currentPrice < ma20 && currentPrice > ma50 && (bbLower >= currentPrice * 0.95 && bbLower <= currentPrice);
+
+            checkAlerts(tickers[i]);
+        } catch (error) {
+            console.error(`Erreur pour ${ticker}:`, error);
+        }
+    }
+    renderTickers();
+}
+
+// Vérifier les alertes
+function checkAlerts(ticker) {
+    if (ticker.combo) {
+        playSound();
+        ticker.alert = 'COMBO détecté !';
+    } else if (ticker.currentPrice <= ticker.price1 || ticker.currentPrice >= ticker.price2) {
+        playSound();
+        ticker.alert = 'Seuil atteint !';
+    } else {
+        ticker.alert = '';
+    }
+}
+
+// Jouer un son pour les alertes
+function playSound() {
+    const audio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
+    audio.play();
+}
+
+// Afficher les tickers
+function renderTickers() {
+    tickerList.innerHTML = '';
+    tickers.forEach((ticker, index) => {
+        const card = document.createElement('div');
+        card.className = `ticker-card ${ticker.combo ? 'combo' : ''} ${ticker.alert && !ticker.combo ? 'alert' : ''}`;
+        card.innerHTML = `
+            <div>
+                <strong>${ticker.ticker}</strong><br>
+                Prix actuel: ${ticker.currentPrice || 'N/A'}<br>
+                Prix 1: ${ticker.price1} | Prix 2: ${ticker.price2}<br>
+                MA20: ${ticker.ma20 || 'N/A'} | MA50: ${ticker.ma50 || 'N/A'}<br>
+                BB Lower: ${ticker.bbLower || 'N/A'}<br>
+                ${ticker.alert ? `<span>${ticker.alert}</span>` : ''}
+            </div>
+            <button class="delete" onclick="deleteTicker(${index})">Supprimer</button>
+        `;
+        tickerList.appendChild(card);
+    });
+}
