@@ -15,7 +15,7 @@ function displayStocks() {
 
 // Récupérer le prix via Alpha Vantage
 function fetchPrice(symbol, liElement) {
-  const apiKey = 'YOUR_API_KEY'; // Remplace par ta clé Alpha Vantage
+  const apiKey = 'RZ7U8BGO3JZI1BQV'; // Remplace par ta clé Alpha Vantage
   fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`)
     .then(response => response.json())
     .then(data => {
