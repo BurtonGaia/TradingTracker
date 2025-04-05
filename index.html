@@ -5,22 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trading Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Trading Dashboard</h1>
-        
-        <!-- Formulaire pour ajouter un ticker -->
-        <div class="ticker-form">
-            <input type="text" id="ticker" placeholder="Ticker (ex: AAPL)" required>
-            <input type="number" id="price1" placeholder="Prix 1" step="0.01" required>
-            <input type="number" id="price2" placeholder="Prix 2" step="0.01" required>
-            <button onclick="addTicker()">Ajouter</button>
+        <header>
+            <h1>Trading Dashboard</h1>
+            <div class="last-update">
+                Dernière mise à jour: <span id="last-update-time">-</span>
+                <button id="refresh-btn" class="btn"><i class="fas fa-sync-alt"></i></button>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <div class="add-ticker-form">
+                <h2>Ajouter un Ticker</h2>
+                <form id="ticker-form">
+                    <div class="form-group">
+                        <label for="ticker-symbol">Symbole</label>
+                        <input type="text" id="ticker-symbol" placeholder="ex: AAPL" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="price-1">Prix 1</label>
+                        <input type="number" id="price-1" step="0.01" placeholder="Prix cible 1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="price-2">Prix 2</label>
+                        <input type="number" id="price-2" step="0.01" placeholder="Prix cible 2" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </form>
+            </div>
+
+            <div class="tickers-container">
+                <h2>Tickers suivis</h2>
+                <div class="tickers-header">
+                    <div>Symbole</div>
+                    <div>Prix actuel</div>
+                    <div>Prix 1</div>
+                    <div>Prix 2</div>
+                    <div>MA20</div>
+                    <div>MA50</div>
+                    <div>BB Lower</div>
+                    <div>Status</div>
+                    <div>Actions</div>
+                </div>
+                <div id="tickers-list" class="tickers-list">
+                    <!-- Les tickers seront ajoutés ici dynamiquement -->
+                </div>
+            </div>
         </div>
 
-        <!-- Liste des tickers -->
-        <div class="ticker-list" id="tickerList"></div>
+        <!-- Modal pour éditer un ticker -->
+        <div id="edit-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Modifier Ticker</h2>
+                <form id="edit-ticker-form">
+                    <input type="hidden" id="edit-ticker-id">
+                    <div class="form-group">
+                        <label for="edit-ticker-symbol">Symbole</label>
+                        <input type="text" id="edit-ticker-symbol" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-price-1">Prix 1</label>
+                        <input type="number" id="edit-price-1" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-price-2">Prix 2</label>
+                        <input type="number" id="edit-price-2" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Notification container -->
+        <div id="notification" class="notification">
+            <span id="notification-message"></span>
+        </div>
     </div>
-    <script src="script.js"></script>
+
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/api.js"></script>
+    <script src="scripts/app.js"></script>
 </body>
 </html>
