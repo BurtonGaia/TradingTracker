@@ -10,7 +10,7 @@ document.body.appendChild(notificationDiv);
 
 let trackedTickers = loadWatchlist();
 
-// Fonction pour afficher une notification (inchangée)
+// Fonction pour afficher une notification
 function showNotification(message, type = 'success', duration = 3000) {
     notificationDiv.textContent = message;
     notificationDiv.className = 'notification';
@@ -21,7 +21,7 @@ function showNotification(message, type = 'success', duration = 3000) {
     }, duration);
 }
 
-// Fonction pour récupérer les informations de l'actif (nom) (inchangée)
+// Fonction pour récupérer les informations de l'actif (nom)
 async function fetchCompanyProfile(ticker) {
     try {
         const response = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apiKey}`);
@@ -37,7 +37,7 @@ async function fetchCompanyProfile(ticker) {
     }
 }
 
-// Fonction pour récupérer le prix actuel (inchangée)
+// Fonction pour récupérer le prix actuel
 async function fetchCurrentPrice(ticker) {
     try {
         const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`);
@@ -50,34 +50,6 @@ async function fetchCurrentPrice(ticker) {
     } catch (error) {
         console.error(`Erreur lors de la récupération du prix pour ${ticker}:`, error);
         return { currentPrice: null };
-    }
-}
-
-// Fonction pour récupérer les moyennes mobiles
-async function fetchMovingAverages(ticker) {
-    const now = Math.floor(Date.now() / 1000);
-    const from = now - (365 * 24 * 3600); // Environ 1 an de données pour avoir suffisamment de points
-
-    try {
-        const responseMA50 = await fetch(`https://finnhub.io/api/v1/indicator?symbol=${ticker}&resolution=D&from=${from}&to=${now}&indicator=sma&timeperiod=50&token=${apiKey}`);
-        const responseMA20 = await fetch(`https://finnhub.io/api/v1/indicator?symbol=${ticker}&resolution=D&from=${from}&to=${now}&indicator=sma&timeperiod=20&token=${apiKey}`);
-
-        if (!responseMA50.ok || !responseMA20.ok) {
-            console.warn(`Impossible de récupérer les MAs pour ${ticker}: MA50 Status: ${responseMA50.status}, MA20 Status: ${responseMA20.status}`);
-            return { ma50: 'N/A', ma20: 'N/A' };
-        }
-
-        const dataMA50 = await responseMA50.json();
-        const dataMA20 = await responseMA20.json();
-
-        const ma50Value = dataMA50.sma && dataMA50.sma.length > 0 ? dataMA50.sma[dataMA50.sma.length - 1].toFixed(2) : 'N/A';
-        const ma20Value = dataMA20.sma && dataMA20.sma.length > 0 ? dataMA20.sma[dataMA20.sma.length - 1].toFixed(2) : 'N/A';
-
-        return { ma50: ma50Value, ma20: ma20Value };
-
-    } catch (error) {
-        console.error(`Erreur lors de la récupération des MAs pour ${ticker}:`, error);
-        return { ma50: 'N/A', ma20: 'N/A' };
     }
 }
 
@@ -104,7 +76,6 @@ async function addTickerToWatchlist() {
 
     const companyInfo = await fetchCompanyProfile(selectedTicker);
     const priceInfo = await fetchCurrentPrice(selectedTicker);
-    const maInfo = await fetchMovingAverages(selectedTicker);
 
     if (priceInfo.currentPrice === null) {
         showNotification(`Impossible de récupérer le prix pour ${selectedTicker}. Vérifiez le ticker.`, 'error');
@@ -116,9 +87,7 @@ async function addTickerToWatchlist() {
         name: companyInfo.name,
         price1: price1,
         price2: price2,
-        currentPrice: priceInfo.currentPrice,
-        ma50: maInfo.ma50,
-        ma20: maInfo.ma20
+        currentPrice: priceInfo.currentPrice
     };
 
     trackedTickers.push(newTickerData);
@@ -130,24 +99,20 @@ async function addTickerToWatchlist() {
     price2Input.value = '';
 }
 
-// Fonction pour supprimer un ticker de la watchlist (inchangée)
+// Fonction pour supprimer un ticker de la watchlist
 function removeTicker(tickerToRemove) {
     trackedTickers = trackedTickers.filter(item => item.ticker !== tickerToRemove);
     saveWatchlist();
     renderWatchlist();
 }
 
-// Fonction pour mettre à jour le prix actuel et vérifier les seuils et les MAs
+// Fonction pour mettre à jour le prix actuel et vérifier les seuils
 async function updateCurrentPrices() {
     for (const item of trackedTickers) {
         const priceInfo = await fetchCurrentPrice(item.ticker);
-        const maInfo = await fetchMovingAverages(item.ticker); // Mise à jour des MAs
-
         if (priceInfo.currentPrice !== null) {
             const oldPrice = item.currentPrice;
             item.currentPrice = priceInfo.currentPrice.toFixed(2);
-            item.ma50 = maInfo.ma50;
-            item.ma20 = maInfo.ma20;
 
             const thresholdPositive1 = item.price1 * 1.02;
             const thresholdNegative1 = item.price1 * 0.98;
@@ -181,8 +146,6 @@ function renderWatchlist() {
             <span>Prix actuel: ${item.currentPrice !== null ? item.currentPrice : 'N/A'}</span>
             <span>Prix 1: ${item.price1}</span>
             <span>Prix 2: ${item.price2}</span>
-            <span>MA50: ${item.ma50}</span>
-            <span>MA20: ${item.ma20}</span>
             <button class="delete-button" data-ticker="${item.ticker}">Supprimer</button>
         `;
         watchlist.appendChild(listItem);
@@ -197,7 +160,7 @@ function renderWatchlist() {
     });
 }
 
-// Fonction pour sauvegarder et charger la watchlist (inchangées)
+// Fonction pour sauvegarder et charger la watchlist
 function saveWatchlist() {
     localStorage.setItem('tradingDashboardWatchlist', JSON.stringify(trackedTickers));
 }
@@ -207,11 +170,16 @@ function loadWatchlist() {
     return storedWatchlist ? JSON.parse(storedWatchlist) : [];
 }
 
-// Événement pour ajouter un ticker (inchangé)
+// Événement pour ajouter un ticker
 addButton.addEventListener('click', addTickerToWatchlist);
 
-// Mettre à jour les prix et les MAs toutes les 15 secondes
-setInterval(updateCurrentPrices, 15000);
+// Mettre à jour les prix toutes les 10 secondes
+setInterval(updateCurrentPrices, 10000);
 
 // Affichage initial de la watchlist
 renderWatchlist();
+
+// Auto-refresh de la page toutes les 10 secondes
+setInterval(() => {
+    location.reload();
+}, 10000);
