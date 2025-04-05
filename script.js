@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function saveEditedRow(index) {
+        console.log('saveEditedRow appelée avec index:', index);
         const row = tickersBody.rows[index];
         const tickerInput = row.querySelector('input[type="text"]');
         const price1Input = row.querySelector('input[type="number"]:nth-child(1)');
@@ -95,6 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const newPrice1 = parseFloat(price1Input.value);
             const newPrice2 = parseFloat(price2Input.value);
 
+            console.log('newTicker:', newTicker, 'newPrice1:', newPrice1, 'newPrice2:', newPrice2);
+
             if (newTicker) {
                 const existingTickerIndex = tickers.findIndex(t => t.symbol === newTicker && t !== tickers[index]);
                 if (existingTickerIndex === -1) {
@@ -104,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     tickers[index].price1 = isNaN(newPrice1) ? null : newPrice1;
                     tickers[index].price2 = isNaN(newPrice2) ? null : newPrice2;
                     editingIndex = -1;
+                    console.log('tickers après modification:', tickers);
                     renderTickers();
                 } else {
                     alert('Ce ticker est déjà suivi.');
