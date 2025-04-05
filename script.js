@@ -1,7 +1,7 @@
 // Charger les stocks depuis LocalStorage
 let stocks = JSON.parse(localStorage.getItem('stocks')) || [];
 const stockList = document.getElementById('stockList');
-const apiKey = 'RZ7U8BGO3JZI1BQV'; // Ta clé Alpha Vantage
+const apiKey = 'RZ7U8BGO3JZI1BQV';
 
 function saveStocks() {
   localStorage.setItem('stocks', JSON.stringify(stocks));
@@ -11,47 +11,92 @@ function saveStocks() {
 function displayStocks() {
   stockList.innerHTML = '';
   stocks.forEach((stock, index) => {
-    const card = document.createElement('div');
-    card.className = 'stock-card';
-    card.innerHTML = `
-      <span>${stock.symbol}</span>
-      <div class="price">Prix actuel: <span class="current-price">Chargement...</span></div>
-      <div>Seuil bas: <span class="price1">${stock.price1}</span></div>
-      <div>Seuil haut: <span class="price2">${stock.price2}</span></div>
-      <div class="edit-inputs" style="display: none;">
-        <input type="number" class="edit-price1" value="${stock.price1}" step="0.01">
-        <input type="number" class="edit-price2" value="${stock.price2}" step="0.01">
-      </div>
-      <button class="edit-btn" onclick="toggleEdit(${index})">Modifier</button>
-      <button class="delete-btn" onclick="deleteStock(${index})">Supprimer</button>
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="stock-name">Chargement...</td>
+      <td>${stock.symbol}</td>
+      <td><span class="current-price">Chargement...</span></td>
+      <td><span class="price1">${stock.price1}</span><div class="edit-inputs" style="display: none;"><input type="number" class="edit-price1" value="${stock.price1}" step="0.01"></div></td>
+      <td><span class="price2">${stock.price2}</span><div class="edit-inputs" style="display: none;"><input type="number" class="edit-price2" value="${stock.price2}" step="0.01"></div></td>
+      <td class="combo-status">Chargement...</td>
+      <td>
+        <button class="edit-btn" onclick="toggleEdit(${index})">Modifier</button>
+        <button class="delete-btn" onclick="deleteStock(${index})">Supprimer</button>
+      </td>
     `;
-    stockList.appendChild(card);
-    fetchPrice(stock.symbol, card);
+    stockList.appendChild(row);
+    fetchData(stock.symbol, row);
   });
 }
 
-// Récupérer le prix
-function fetchPrice(symbol, card) {
+// Récupérer prix et données techniques
+function fetchData(symbol, row) {
+  // Nom de l'action
+  fetch(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${symbol}&apikey=${apiKey}`)
+    .then(response => response.json())
+    .then(data => {
+      const name = data.bestMatches?.[0]?.['2. name'] || 'Inconnu';
+      row.querySelector('.stock-name').textContent = name;
+    });
+
+  // Prix actuel
   fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`)
     .then(response => response.json())
     .then(data => {
       const price = data['Global Quote']?.['05. price'] || 'N/A';
-      card.querySelector('.current-price').textContent = price;
+      row.querySelector('.current-price').textContent = price;
       checkAlerts(symbol, price);
+    });
+
+  // Données weekly pour Combo
+  fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol=${symbol}&apikey=${apiKey}`)
+    .then(response => response.json())
+    .then(data => {
+      const weekly = Object.entries(data['Weekly Time Series'])[0][1];
+      const price = parseFloat(weekly['4. close']);
+      checkCombo(symbol, price, row);
     })
     .catch(error => {
       console.error('Erreur:', error);
-      card.querySelector('.current-price').textContent = 'Erreur';
+      row.querySelector('.combo-status').textContent = 'Erreur';
+    });
+
+  // Bollinger Bands (weekly)
+  fetch(`https://www.alphavantage.co/query?function=BBANDS&symbol=${symbol}&interval=weekly&time_period=20&series_type=close&nbdevup=2&nbdevdn=2&apikey=${apiKey}`)
+    .then(response => response.json())
+    .then(data => {
+      const latest = Object.entries(data['Technical Analysis: BBANDS'])[0][1];
+      const lowerBand = parseFloat(latest['Lower Band']);
+      checkCombo(symbol, null, row, lowerBand);
     });
 }
 
-// Vérifier les alertes avec tolérance de ±2%
+// Vérifier le Combo
+function checkCombo(symbol, price, row, lowerBand) {
+  const stock = stocks.find(s => s.symbol === symbol);
+  fetch(`https://www.alphavantage.co/query?function=SMA&symbol=${symbol}&interval=weekly&time_period=20&series_type=close&apikey=${apiKey}`)
+    .then(response => response.json())
+    .then(ma20Data => {
+      const ma20 = parseFloat(Object.entries(ma20Data['Technical Analysis: SMA'])[0][1]['SMA']);
+      fetch(`https://www.alphavantage.co/query?function=SMA&symbol=${symbol}&interval=weekly&time_period=50&series_type=close&apikey=${apiKey}`)
+        .then(response => response.json())
+        .then(ma50Data => {
+          const ma50 = parseFloat(Object.entries(ma50Data['Technical Analysis: SMA'])[0][1]['SMA']);
+          const currentPrice = price || parseFloat(row.querySelector('.current-price').textContent);
+          const isCombo = currentPrice < ma20 && currentPrice > ma50 && lowerBand >= currentPrice * 0.95 && lowerBand <= currentPrice * 1.05;
+          row.querySelector('.combo-status').textContent = isCombo ? 'Oui' : 'Non';
+          row.querySelector('.combo-status').className = `combo-status ${isCombo ? 'combo-yes' : 'combo-no'}`;
+        });
+    });
+}
+
+// Vérifier les alertes (±2%)
 function checkAlerts(symbol, currentPrice) {
   const stock = stocks.find(s => s.symbol === symbol);
   if (stock && currentPrice !== 'N/A') {
     const price = parseFloat(currentPrice);
-    const lowThreshold = stock.price1 * 0.98; // -2%
-    const highThreshold = stock.price2 * 1.02; // +2%
+    const lowThreshold = stock.price1 * 0.98;
+    const highThreshold = stock.price2 * 1.02;
     if (price <= stock.price1 * 1.02 && price >= lowThreshold) {
       showAlert(`${symbol} est proche du seuil bas (${stock.price1}): ${price}`);
     } else if (price >= stock.price2 * 0.98 && price <= highThreshold) {
@@ -62,18 +107,15 @@ function checkAlerts(symbol, currentPrice) {
 
 // Afficher une alerte avec son
 function showAlert(message) {
-  // Popup
   const alertBox = document.createElement('div');
   alertBox.style.cssText = `
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    background: #e74c3c; color: white; padding: 15px; border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1000;
+    background: #e53e3e; color: white; padding: 10px; border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000;
   `;
   alertBox.textContent = message;
   document.body.appendChild(alertBox);
   setTimeout(() => alertBox.remove(), 5000);
-
-  // Son
   const audio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
   audio.play().catch(err => console.log('Erreur son:', err));
 }
@@ -99,39 +141,36 @@ function deleteStock(index) {
 
 // Modifier un stock
 function toggleEdit(index) {
-  const card = stockList.children[index];
-  const editInputs = card.querySelector('.edit-inputs');
-  const editBtn = card.querySelector('.edit-btn');
-  const isEditing = editInputs.style.display === 'flex';
+  const row = stockList.children[index];
+  const editInputs = row.querySelectorAll('.edit-inputs');
+  const editBtn = row.querySelector('.edit-btn');
+  const isEditing = editInputs[0].style.display === 'flex';
 
   if (isEditing) {
-    const newPrice1 = parseFloat(card.querySelector('.edit-price1').value);
-    const newPrice2 = 
-   
-parseFloat(card.querySelector('.edit-price2').value);
+    const newPrice1 = parseFloat(row.querySelector('.edit-price1').value);
+    const newPrice2 = parseFloat(row.querySelector('.edit-price2').value);
     stocks[index].price1 = newPrice1;
     stocks[index].price2 = newPrice2;
     saveStocks();
     displayStocks();
   } else {
-    editInputs.style.display = 'flex';
-    card.querySelector('.price1').style.display = 'none';
-    card.querySelector('.price2').style.display = 'none';
+    editInputs.forEach(input => input.style.display = 'flex');
+    row.querySelector('.price1').style.display = 'none';
+    row.querySelector('.price2').style.display = 'none';
     editBtn.textContent = 'Sauvegarder';
   }
 }
 
-// Mettre à jour les prix toutes les 60 secondes
+// Mettre à jour les données toutes les 60 secondes
 setInterval(() => {
   stocks.forEach((stock, index) => {
-    const card = stockList.children[index];
-    if (card) fetchPrice(stock.symbol, card);
+    const row = stockList.children[index];
+    if (row) fetchData(stock.symbol, row);
   });
 }, 60000);
 
 // Afficher au démarrage
 displayStocks();
 
-// Exposer les fonctions globalement
 window.deleteStock = deleteStock;
 window.toggleEdit = toggleEdit;
