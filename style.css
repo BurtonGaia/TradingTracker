@@ -86,9 +86,29 @@ main {
     margin-top: 0;
     color: #cbd5e0;
     text-align: left;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     font-size: 1.8em;
     font-weight: 500;
+}
+
+.watchlist-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 50px;
+    gap: 15px;
+    padding: 10px 15px;
+    color: #a0aec0;
+    font-weight: bold;
+    border-bottom: 1px solid #4a5568;
+    margin-bottom: 10px;
+}
+
+.watchlist-header span {
+    font-size: 0.9em;
+    text-align: left;
+}
+
+.watchlist-header .header-actions {
+    text-align: center;
 }
 
 #watchlist {
@@ -100,12 +120,13 @@ main {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr 1fr 1fr 50px;
     gap: 15px;
-    padding: 15px;
+    padding: 10px 15px; /* Réduction du padding vertical */
     border-bottom: 1px solid #4a5568;
     align-items: center;
     background-color: #374151;
     border-radius: 6px;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* Réduction de la marge verticale */
+    min-height: 40px; /* Définir une hauteur minimale pour l'alignement */
 }
 
 #watchlist li:last-child {
@@ -114,8 +135,12 @@ main {
 }
 
 #watchlist li span {
-    font-size: 1em;
+    font-size: 0.95em;
     color: #f7fafc;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 #watchlist li .ticker {
@@ -124,40 +149,44 @@ main {
 }
 
 .delete-button {
-    background-color: #e53e3e;
-    color: white;
+    background: none;
     border: none;
-    border-radius: 6px;
-    padding: 8px 12px;
+    color: #e53e3e;
+    font-size: 1.2em;
     cursor: pointer;
-    font-size: 0.9em;
-    transition: background-color 0.3s ease;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    line-height: 1;
 }
 
 .delete-button:hover {
-    background-color: #c53030;
+    color: #c53030;
 }
 
-/* Modal Styles */
+/* Modal Styles (no changes needed) */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
+    display: none;
+    position: fixed;
+    z-index: 1;
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
 }
 
 .modal-content {
     background-color: #2d3748;
-    margin: 15% auto; /* 15% from the top and centered */
+    margin: 15% auto;
     padding: 20px;
     border: 1px solid #718096;
     border-radius: 10px;
-    width: 80%; /* Could be more or less, depending on screen size */
+    width: 80%;
     max-width: 500px;
     position: relative;
 }
@@ -239,7 +268,7 @@ main {
     overflow-y: auto;
     z-index: 2;
     position: absolute;
-    width: calc(100% - 2px); /* Adjust width to match input */
+    width: calc(100% - 2px);
 }
 
 #suggestions li {
