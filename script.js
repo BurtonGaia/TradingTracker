@@ -1,4 +1,4 @@
-const apiKey = 'cvopq21r01qihjtq7uagcvopq21r01qihjtq7ub0';
+const apiKey = 'VOTRE_CLE_API_FINNHUB'; // Remplacez par votre clé API Finnhub
 const toggleAddTickerButton = document.getElementById('toggle-add-ticker');
 const addTickerModal = document.getElementById('add-ticker-modal');
 const closeButton = document.querySelector('.close-button');
@@ -7,48 +7,15 @@ const suggestionsList = document.getElementById('suggestions');
 const price1ModalInput = document.getElementById('price1-modal');
 const price2ModalInput = document.getElementById('price2-modal');
 const addButtonModal = document.getElementById('add-button-modal');
-const watchlistSimple = document.getElementById('watchlist');
-const watchlistDetailedContainer = document.getElementById('watchlist-detailed');
+const watchlist = document.getElementById('watchlist');
 const notificationDiv = document.createElement('div');
 notificationDiv.classList.add('notification');
 document.body.appendChild(notificationDiv);
-const activeAlertsListSimple = document.getElementById('active-alerts');
-const activeAlertsListDetailed = document.getElementById('active-alerts-detailed');
-const interfaceModeSelect = document.getElementById('interface-mode');
-const mainSimple = document.querySelector('main.interface-simple');
-const mainDetailed = document.querySelector('main.interface-detailed');
-const detailedStyleLink = document.getElementById('detailed-style');
+const activeAlertsList = document.getElementById('active-alerts');
 
 let trackedTickers = loadWatchlist();
 let allSymbols = [];
 let activeAlerts = {};
-let currentInterfaceMode = localStorage.getItem('interfaceMode') || 'simple';
-
-// Function to switch interface mode
-function switchInterfaceMode(mode) {
-    if (mode === 'simple') {
-        mainSimple.style.display = 'flex';
-        mainDetailed.style.display = 'none';
-        detailedStyleLink.disabled = true;
-    } else if (mode === 'detailed') {
-        mainSimple.style.display = 'none';
-        mainDetailed.style.display = 'flex';
-        detailedStyleLink.disabled = false;
-    }
-    currentInterfaceMode = mode;
-    localStorage.setItem('interfaceMode', mode);
-    renderWatchlist(); // Re-render based on the mode
-    renderActiveAlerts(); // Re-render alerts based on the mode
-}
-
-// Event listener for interface mode selection
-interfaceModeSelect.addEventListener('change', (event) => {
-    switchInterfaceMode(event.target.value);
-});
-
-// Initial interface setup
-switchInterfaceMode(currentInterfaceMode);
-interfaceModeSelect.value = currentInterfaceMode;
 
 // Fetch all symbols for autocompletion
 async function fetchAllSymbols() {
@@ -155,24 +122,6 @@ async function fetchCompanyProfile(ticker) {
     } catch (error) {
         console.error(`Erreur lors de la récupération du profil pour ${ticker}:`, error);
         return { name: 'N/A' };
-    }
-}
-
-// Function to fetch historical prices for the mini-graph
-async function fetchHistoricalPrices(ticker) {
-    const now = Math.floor(Date.now() / 1000);
-    const from = now - (24 * 60 * 60); // Last 24 hours (in seconds)
-    try {
-        const response = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${ticker}&resolution=60&from=${from}&to=${now}&token=${apiKey}`);
-        if (!response.ok) {
-            console.warn(`Impossible de récupérer l'historique pour ${ticker}: ${response.status}`);
-            return { t: [], c: [] }; // Return empty arrays on error
-        }
-        const data = await response.json();
-        return { timestamps: data.t || [], closingPrices: data.c || [] };
-    } catch (error) {
-        console.error(`Erreur lors de la récupération de l'historique pour ${ticker}:`, error);
-        return { timestamps: [], closingPrices: [] };
     }
 }
 
@@ -297,44 +246,41 @@ async function updateCurrentPrices() {
     renderWatchlist();
     renderActiveAlerts();
 }
-// Function to render the watchlist based on the current interface mode
-function renderWatchlist() {
-    if (currentInterfaceMode === 'simple') {
-        watchlistSimple.innerHTML = '';
-        trackedTickers.forEach(item => {
-            const listItem = document.createElement('li');
-            listItem.classList.toggle('alerting', item.isAlerting);
-            listItem.innerHTML = `
-                <span class="ticker">${item.ticker}</span>
-                <span>${item.name}</span>
-                <span>${item.currentPrice !== null ? item.currentPrice : 'N/A'}</span>
-                <span>${item.price1}</span>
-                <span>${item.price2}</span>
-                <button class="delete-button" data-ticker="${item.ticker}">&times;</button>
-            `;
-            watchlistSimple.appendChild(listItem);
-        });
 
-        const deleteButtons = watchlistSimple.querySelectorAll('.delete-button');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const tickerToDelete = this.dataset.ticker;
-                removeTicker(tickerToDelete);
-            });
+// Function to render the watchlist
+function renderWatchlist() {
+    watchlist.innerHTML = '';
+    trackedTickers.forEach(item => {
+        const listItem = document.createElement('li');
+        listItem.classList.toggle('alerting', item.isAlerting);
+        listItem.innerHTML = `
+            <span class="ticker">${item.ticker}</span>
+            <span>${item.name}</span>
+            <span>${item.currentPrice !== null ? item.currentPrice : 'N/A'}</span>
+            <span>${item.price1}</span>
+            <span>${item.price2}</span>
+            <button class="delete-button" data-ticker="${item.ticker}">&times;</button>
+        `;
+        watchlist.appendChild(listItem);
+    });
+
+    const deleteButtons = watchlist.querySelectorAll('.delete-button');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tickerToDelete = this.dataset.ticker;
+            removeTicker(tickerToDelete);
         });
-    }
-    function renderActiveAlerts() {
-    activeAlertsListSimple.innerHTML = '';
-    activeAlertsListDetailed.innerHTML = '';
+    });
+}
+
+// Function to render active alerts
+function renderActiveAlerts() {
+    activeAlertsList.innerHTML = '';
     for (const ticker in activeAlerts) {
         if (activeAlerts.hasOwnProperty(ticker)) {
-            const listItemSimple = document.createElement('li');
-            listItemSimple.innerHTML = `<span>${ticker}</span>: ${activeAlerts[ticker]}`;
-            activeAlertsListSimple.appendChild(listItemSimple);
-
-            const listItemDetailed = document.createElement('li');
-            listItemDetailed.innerHTML = `<span>${ticker}</span>: ${activeAlerts[ticker]}`;
-            activeAlertsListDetailed.appendChild(listItemDetailed);
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `<span>${ticker}</span>: ${activeAlerts[ticker]}`;
+            activeAlertsList.appendChild(listItem);
         }
     }
 }
@@ -355,3 +301,4 @@ fetchAllSymbols().then(() => {
     renderActiveAlerts();
     setInterval(updateCurrentPrices, 10000);
 });
+
