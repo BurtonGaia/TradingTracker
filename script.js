@@ -211,24 +211,18 @@ async function updateCurrentPrices() {
         const priceInfo = await fetchCurrentPrice(item.ticker);
         if (priceInfo.currentPrice !== null) {
             const currentPrice = priceInfo.currentPrice;
-            const thresholdPositive1 = item.price1 * 1.02;
-            const thresholdNegative1 = item.price1 * 0.98;
-            const thresholdPositive2 = item.price2 * 1.02;
-            const thresholdNegative2 = item.price2 * 0.98;
+            const thresholdPositiveCurrent1 = currentPrice * 1.03;
+            const thresholdNegativeCurrent1 = currentPrice * 0.97;
+            const thresholdPositiveCurrent2 = currentPrice * 1.03;
+            const thresholdNegativeCurrent2 = currentPrice * 0.97;
 
             let isAlerting = false;
 
-            if (currentPrice >= thresholdPositive1) {
-                currentActiveAlerts[item.ticker] = `Alerte: ${item.ticker} a atteint ou dépassé +2% de Prix 1 (${item.price1.toFixed(2)}) - Prix actuel: ${currentPrice.toFixed(2)}`;
+            if (item.price1 >= thresholdNegativeCurrent1 && item.price1 <= thresholdPositiveCurrent1) {
+                currentActiveAlerts[item.ticker] = `Alerte: Prix 1 (${item.price1.toFixed(2)}) proche du prix actuel (${currentPrice.toFixed(2)})`;
                 isAlerting = true;
-            } else if (currentPrice <= thresholdNegative1) {
-                currentActiveAlerts[item.ticker] = `Alerte: ${item.ticker} a atteint ou dépassé -2% de Prix 1 (${item.price1.toFixed(2)}) - Prix actuel: ${currentPrice.toFixed(2)}`;
-                isAlerting = true;
-            } else if (currentPrice >= thresholdPositive2) {
-                currentActiveAlerts[item.ticker] = `Alerte: ${item.ticker} a atteint ou dépassé +2% de Prix 2 (${item.price2.toFixed(2)}) - Prix actuel: ${currentPrice.toFixed(2)}`;
-                isAlerting = true;
-            } else if (currentPrice <= thresholdNegative2) {
-                currentActiveAlerts[item.ticker] = `Alerte: ${item.ticker} a atteint ou dépassé -2% de Prix 2 (${item.price2.toFixed(2)}) - Prix actuel: ${currentPrice.toFixed(2)}`;
+            } else if (item.price2 >= thresholdNegativeCurrent2 && item.price2 <= thresholdPositiveCurrent2) {
+                currentActiveAlerts[item.ticker] = `Alerte: Prix 2 (${item.price2.toFixed(2)}) proche du prix actuel (${currentPrice.toFixed(2)})`;
                 isAlerting = true;
             }
 
