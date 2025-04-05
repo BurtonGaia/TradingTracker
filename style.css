@@ -1,8 +1,8 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-    background-color: #1a202c; /* Fond sombre et moderne */
-    color: #e2e8f0; /* Texte clair */
+    background-color: #1a202c;
+    color: #e2e8f0;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -10,7 +10,7 @@ body {
 }
 
 .dashboard-container {
-    background-color: #2d3748; /* Conteneur plus clair dans le thème sombre */
+    background-color: #2d3748;
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     display: flex;
@@ -23,10 +23,12 @@ body {
 }
 
 header {
-    background-color: #4a5568; /* En-tête plus sombre */
+    background-color: #4a5568;
     color: #cbd5e0;
-    padding: 20px;
-    text-align: center;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     border-bottom: 1px solid #718096;
 }
 
@@ -34,6 +36,25 @@ header h1 {
     margin: 0;
     font-size: 2em;
     font-weight: 500;
+}
+
+#toggle-add-ticker {
+    background-color: #48bb78;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.5em;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+#toggle-add-ticker:hover {
+    background-color: #38a169;
 }
 
 main {
@@ -44,9 +65,7 @@ main {
 }
 
 .watchlist-section {
-    flex-grow: 3;
-    padding-right: 30px;
-    border-right: 1px solid #4a5568;
+    flex-grow: 1;
     overflow-y: auto;
 }
 
@@ -84,7 +103,7 @@ main {
     padding: 15px;
     border-bottom: 1px solid #4a5568;
     align-items: center;
-    background-color: #374151; /* Légère variation pour les lignes */
+    background-color: #374151;
     border-radius: 6px;
     margin-bottom: 10px;
 }
@@ -101,7 +120,7 @@ main {
 
 #watchlist li .ticker {
     font-weight: bold;
-    color: #64b5f6; /* Couleur accent pour le ticker */
+    color: #64b5f6;
 }
 
 .delete-button {
@@ -119,15 +138,45 @@ main {
     background-color: #c53030;
 }
 
-.add-ticker-section {
-    flex-grow: 1;
-    padding-left: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
-.add-ticker-section h3 {
+.modal-content {
+    background-color: #2d3748;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #718096;
+    border-radius: 10px;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 500px;
+    position: relative;
+}
+
+.close-button {
+    color: #cbd5e0;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #f7fafc;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#add-ticker-modal h3 {
     color: #cbd5e0;
     text-align: left;
     margin-top: 0;
@@ -136,21 +185,21 @@ main {
     font-weight: 500;
 }
 
-.input-group {
+#add-ticker-modal .input-group {
     display: flex;
     flex-direction: column;
     margin-bottom: 15px;
 }
 
-.input-group label {
+#add-ticker-modal .input-group label {
     font-weight: bold;
     margin-bottom: 8px;
     font-size: 0.95em;
     color: #cbd5e0;
 }
 
-.input-group input[type="number"],
-.input-group input[type="text"] {
+#add-ticker-modal .input-group input[type="number"],
+#add-ticker-modal .input-group input[type="text"] {
     padding: 10px;
     border: 1px solid #718096;
     border-radius: 6px;
@@ -159,12 +208,12 @@ main {
     color: #f7fafc;
 }
 
-.input-group input[type="number"]::placeholder,
-.input-group input[type="text"]::placeholder {
+#add-ticker-modal .input-group input[type="number"]::placeholder,
+#add-ticker-modal .input-group input[type="text"]::placeholder {
     color: #a0aec0;
 }
 
-#add-button {
+#add-button-modal {
     background-color: #48bb78;
     color: white;
     padding: 12px 20px;
@@ -175,8 +224,33 @@ main {
     transition: background-color 0.3s ease;
 }
 
-#add-button:hover {
+#add-button-modal:hover {
     background-color: #38a169;
+}
+
+#suggestions {
+    list-style: none;
+    padding: 0;
+    margin-top: 5px;
+    background-color: #374151;
+    border: 1px solid #718096;
+    border-radius: 6px;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 2;
+    position: absolute;
+    width: calc(100% - 2px); /* Adjust width to match input */
+}
+
+#suggestions li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.95em;
+    color: #f7fafc;
+}
+
+#suggestions li:hover {
+    background-color: #4a5568;
 }
 
 .notification {
@@ -184,7 +258,7 @@ main {
     top: 30px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #38a169; /* Vert pour succès */
+    background-color: #38a169;
     color: white;
     padding: 15px 25px;
     border-radius: 8px;
@@ -198,10 +272,10 @@ main {
 }
 
 .notification.warning {
-    background-color: #ed8936; /* Orange pour avertissement */
+    background-color: #ed8936;
     color: #2d3748;
 }
 
 .notification.error {
-    background-color: #e53e3e; /* Rouge pour erreur */
+    background-color: #e53e3e;
 }
