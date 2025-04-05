@@ -1,88 +1,83 @@
-const apiBase = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=";
-let tickers = JSON.parse(localStorage.getItem("tickers") || "[]");
-const form = document.getElementById("tickerForm");
-const list = document.getElementById("tickerList");
-const alertSound = document.getElementById("alertSound");
-
-form.addEventListener("submit", e => {
-  e.preventDefault();
-  const ticker = form.ticker.value.toUpperCase();
-  const price1 = parseFloat(form.price1.value);
-  const price2 = parseFloat(form.price2.value);
-  tickers.push({ ticker, price1, price2 });
-  saveTickers();
-  form.reset();
-  renderTickers();
-});
+let tickers = JSON.parse(localStorage.getItem('tickers')) || [];
 
 function saveTickers() {
-  localStorage.setItem("tickers", JSON.stringify(tickers));
+    localStorage.setItem('tickers', JSON.stringify(tickers));
 }
 
-function removeTicker(index) {
-  tickers.splice(index, 1);
-  saveTickers();
-  renderTickers();
+function addTicker() {
+    const ticker = document.getElementById('tickerInput').value.toUpperCase();
+    const price1 = parseFloat(document.getElementById('price1Input').value);
+    const price2 = parseFloat(document.getElementById('price2Input').value);
+    
+    if (ticker && !isNaN(price1) && !isNaN(price2)) {
+        tickers.push({ ticker, price1, price2 });
+        saveTickers();
+        updateDashboard();
+        clearInputs();
+    }
 }
 
-function renderTickers() {
-  list.innerHTML = "";
-  tickers.forEach((item, i) => {
-    fetch(`${apiBase}${item.ticker}`)
-      .then(res => res.json())
-      .then(data => {
-        const quote = data.quoteResponse.result[0];
-        const price = quote.regularMarketPrice;
-        const histUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${item.ticker}?interval=1d&range=3mo`;
-
-        fetch(histUrl)
-          .then(r => r.json())
-          .then(hist => {
-            const prices = hist.chart.result[0].indicators.quote[0].close;
-            const validPrices = prices.filter(p => p);
-            const ma20 = avg(validPrices.slice(-20));
-            const ma50 = avg(validPrices.slice(-50));
-            const std20 = std(validPrices.slice(-20));
-            const lowerBB = ma20 - 2 * std20;
-            const combo = price < ma20 && price > ma50 && lowerBB > price * 0.95;
-
-            const card = document.createElement("div");
-            card.className = "card";
-            if (combo) card.classList.add("highlight");
-            if (price <= item.price1 || price <= item.price2 || combo) {
-              card.classList.add("alert");
-              alertSound.play();
-            }
-
-            card.innerHTML = `
-              <div class="card-header">
-                <strong>${item.ticker}</strong>
-                <button onclick="removeTicker(${i})">🗑</button>
-              </div>
-              <div class="card-body">
-                <span>Prix actuel: ${price.toFixed(2)}</span>
-                <span>Prix 1: ${item.price1}</span>
-                <span>Prix 2: ${item.price2}</span>
-                <span>MA20: ${ma20.toFixed(2)}</span>
-                <span>MA50: ${ma50.toFixed(2)}</span>
-                <span>BB Bas: ${lowerBB.toFixed(2)}</span>
-                <span>COMBO: ${combo ? "✅" : "❌"}</span>
-              </div>
-            `;
-            list.appendChild(card);
-          });
-      });
-  });
+function clearInputs() {
+    document.getElementById('tickerInput').value = '';
+    document.getElementById('price1Input').value = '';
+    document.getElementById('price2Input').value = '';
 }
 
-function avg(arr) {
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
+async function fetchStockData(ticker) {
+    const response = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ticker}`);
+    const data = await response.json();
+    const quote = data.quoteResponse.result[0];
+    return {
+        price: quote.regularMarketPrice,
+        ma20: quote.fiftyDayAverage, // Approximation pour MA20
+        ma50: quote.twoHundredDayAverage, // Approximation pour MA50
+        bbLower: quote.regularMarketPrice * 0.95 // Approximation simple pour BB basse
+    };
 }
 
-function std(arr) {
-  const mean = avg(arr);
-  return Math.sqrt(arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length);
+function checkCombo(price, ma20, ma50, bbLower) {
+    return price < ma20 && price > ma50 && (bbLower >= price * 0.95 && bbLower <= price);
 }
 
-renderTickers();
-setInterval(renderTickers, 3600000); // 1h
+function playAlert() {
+    document.getElementById('alertSound').play();
+}
+
+function updateDashboard() {
+    const tickerList = document.getElementById('tickerList');
+    tickerList.innerHTML = '';
+
+    tickers.forEach(async (item, index) => {
+        const data = await fetchStockData(item.ticker);
+        const card = document.createElement('div');
+        card.className = 'ticker-card';
+
+        const isCombo = checkCombo(data.price, data.ma20, data.ma50, data.bbLower);
+        const hitPrice1 = Math.abs(data.price - item.price1) < 0.01;
+        const hitPrice2 = Math.abs(data.price - item.price2) < 0.01;
+
+        if (isCombo || hitPrice1 || hitPrice2) playAlert();
+
+        card.innerHTML = `
+            <h3>${item.ticker}</h3>
+            <p>Prix actuel: ${data.price.toFixed(2)}</p>
+            <p>Prix 1: ${item.price1.toFixed(2)} ${hitPrice1 ? '<span class="alert">Atteint!</span>' : ''}</p>
+            <p>Prix 2: ${item.price2.toFixed(2)} ${hitPrice2 ? '<span class="alert">Atteint!</span>' : ''}</p>
+            <p>COMBO: ${isCombo ? '<span class="combo">Oui</span>' : 'Non'}</p>
+            <button class="delete-btn" onclick="deleteTicker(${index})">Supprimer</button>
+        `;
+        tickerList.appendChild(card);
+    });
+}
+
+function deleteTicker(index) {
+    tickers.splice(index, 1);
+    saveTickers();
+    updateDashboard();
+}
+
+// Rafraîchissement toutes les heures (3600000 ms)
+setInterval(updateDashboard, 3600000);
+
+// Initialisation
+updateDashboard();
