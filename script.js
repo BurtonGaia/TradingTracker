@@ -3,10 +3,6 @@ let stocks = JSON.parse(localStorage.getItem('stocks')) || [];
 const stockList = document.getElementById('stockList');
 const apiKey = 'RZ7U8BGO3JZI1BQV';
 
-// File d'attente pour limiter les appels API
-let apiQueue = [];
-let isProcessing = false;
-
 function saveStocks() {
   localStorage.setItem('stocks', JSON.stringify(stocks));
 }
@@ -21,74 +17,63 @@ function displayStocks() {
       <td><span class="current-price">Chargement...</span></td>
       <td><span class="price1">${stock.price1}</span><div class="edit-inputs" style="display: none;"><input type="number" class="edit-price1" value="${stock.price1}" step="0.01"></div></td>
       <td><span class="price2">${stock.price2}</span><div class="edit-inputs" style="display: none;"><input type="number" class="edit-price2" value="${stock.price2}" step="0.01"></div></td>
-      <td class="combo-status">Chargement...</td>
+      <td class="combo-status"></td>
       <td>
         <button class="edit-btn" onclick="toggleEdit(${index})">Modifier</button>
         <button class="delete-btn" onclick="deleteStock(${index})">Supprimer</button>
       </td>
     `;
     stockList.appendChild(row);
-    queueApiCall(() => fetchData(stock.symbol, row));
+    fetchData(stock.symbol, row, index);
   });
 }
 
-// Gestion de la file d'attente API
-function queueApiCall(call) {
-  apiQueue.push(call);
-  if (!isProcessing) processQueue();
-}
-
-async function processQueue() {
-  if (apiQueue.length === 0) {
-    isProcessing = false;
-    return;
-  }
-  isProcessing = true;
-  const call = apiQueue.shift();
-  await call();
-  setTimeout(processQueue, 15000); // 15s entre appels pour respecter la limite
-}
-
-// Récupérer les données
-async function fetchData(symbol, row) {
+// Récupérer les données avec gestion des limites
+async function fetchData(symbol, row, index) {
   try {
-    // Nom
+    // Nom et prix en un appel (GLOBAL_QUOTE ne donne pas le nom, donc SYMBOL_SEARCH d'abord)
     const nameRes = await fetch(`https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${symbol}&apikey=${apiKey}`);
     const nameData = await nameRes.json();
-    row.querySelector('.stock-name').textContent = nameData.bestMatches?.[0]?.['2. name'] || 'Inconnu';
+    const name = nameData.bestMatches?.[0]?.['2. name'] || 'Inconnu';
+    row.querySelector('.stock-name').textContent = name;
 
-    // Prix
     const priceRes = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`);
     const priceData = await priceRes.json();
     const price = priceData['Global Quote']?.['05. price'] || 'N/A';
     row.querySelector('.current-price').textContent = price;
-    checkAlerts(symbol, price);
+    if (price !== 'N/A') checkAlerts(symbol, price);
 
-    // Combo (Weekly)
-    const weeklyRes = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol=${symbol}&apikey=${apiKey}`);
-    const weeklyData = await weeklyRes.json();
-    const weeklyPrice = parseFloat(Object.entries(weeklyData['Weekly Time Series'])[0][1]['4. close']);
+    // Combo (Weekly) - Appels séparés avec attente
+    setTimeout(async () => {
+      try {
+        const weeklyRes = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol=${symbol}&apikey=${apiKey}`);
+        const weeklyData = await weeklyRes.json();
+        const weeklyPrice = parseFloat(Object.entries(weeklyData['Weekly Time Series'])[0][1]['4. close']);
 
-    const ma20Res = await fetch(`https://www.alphavantage.co/query?function=SMA&symbol=${symbol}&interval=weekly&time_period=20&series_type=close&apikey=${apiKey}`);
-    const ma20Data = await ma20Res.json();
-    const ma20 = parseFloat(Object.entries(ma20Data['Technical Analysis: SMA'])[0][1]['SMA']);
+        const ma20Res = await fetch(`https://www.alphavantage.co/query?function=SMA&symbol=${symbol}&interval=weekly&time_period=20&series_type=close&apikey=${apiKey}`);
+        const ma20Data = await ma20Res.json();
+        const ma20 = parseFloat(Object.entries(ma20Data['Technical Analysis: SMA'])[0][1]['SMA']);
 
-    const ma50Res = await fetch(`https://www.alphavantage.co/query?function=SMA&symbol=${symbol}&interval=weekly&time_period=50&series_type=close&apikey=${apiKey}`);
-    const ma50Data = await ma50Res.json();
-    const ma50 = parseFloat(Object.entries(ma50Data['Technical Analysis: SMA'])[0][1]['SMA']);
+        const ma50Res = await fetch(`https://www.alphavantage.co/query?function=SMA&symbol=${symbol}&interval=weekly&time_period=50&series_type=close&apikey=${apiKey}`);
+        const ma50Data = await ma50Res.json();
+        const ma50 = parseFloat(Object.entries(ma50Data['Technical Analysis: SMA'])[0][1]['SMA']);
 
-    const bbRes = await fetch(`https://www.alphavantage.co/query?function=BBANDS&symbol=${symbol}&interval=weekly&time_period=20&series_type=close&nbdevup=2&nbdevdn=2&apikey=${apiKey}`);
-    const bbData = await bbRes.json();
-    const lowerBand = parseFloat(Object.entries(bbData['Technical Analysis: BBANDS'])[0][1]['Lower Band']);
+        const bbRes = await fetch(`https://www.alphavantage.co/query?function=BBANDS&symbol=${symbol}&interval=weekly&time_period=20&series_type=close&nbdevup=2&nbdevdn=2&apikey=${apiKey}`);
+        const bbData = await bbRes.json();
+        const lowerBand = parseFloat(Object.entries(bbData['Technical Analysis: BBANDS'])[0][1]['Lower Band']);
 
-    const isCombo = weeklyPrice < ma20 && weeklyPrice > ma50 && lowerBand >= weeklyPrice * 0.95 && lowerBand <= weeklyPrice * 1.05;
-    row.querySelector('.combo-status').textContent = isCombo ? 'Oui' : 'Non';
-    row.querySelector('.combo-status').className = `combo-status ${isCombo ? 'combo-yes' : 'combo-no'}`;
+        const isCombo = weeklyPrice < ma20 && weeklyPrice > ma50 && lowerBand >= weeklyPrice * 0.95 && lowerBand <= weeklyPrice * 1.05;
+        row.querySelector('.combo-status').textContent = isCombo ? 'Oui' : '';
+        if (isCombo) row.querySelector('.combo-status').className = 'combo-status combo-yes';
+      } catch (error) {
+        console.error('Erreur Combo:', error);
+        row.querySelector('.combo-status').textContent = '';
+      }
+    }, index * 15000); // Délai progressif pour éviter la limite
   } catch (error) {
     console.error('Erreur:', error);
     row.querySelector('.stock-name').textContent = 'Erreur';
     row.querySelector('.current-price').textContent = 'N/A';
-    row.querySelector('.combo-status').textContent = 'Erreur';
   }
 }
 
@@ -112,8 +97,8 @@ function showAlert(message) {
   const alertBox = document.createElement('div');
   alertBox.style.cssText = `
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    background: #ff3e3e; color: #fff; padding: 10px 20px; border-radius: 4px;
-    box-shadow: 0 0 15px rgba(255, 62, 62, 0.7); z-index: 1000;
+    background: #e53e3e; color: #fff; padding: 10px 20px; border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000;
   `;
   alertBox.textContent = message;
   document.body.appendChild(alertBox);
@@ -167,7 +152,7 @@ function toggleEdit(index) {
 setInterval(() => {
   stocks.forEach((stock, index) => {
     const row = stockList.children[index];
-    if (row) queueApiCall(() => fetchData(stock.symbol, row));
+    if (row) fetchData(stock.symbol, row, index);
   });
 }, 60000);
 
