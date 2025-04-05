@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Trading Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Dashboard de Trading</h1>
+  <form id="stockForm">
+    <input type="text" id="symbol" placeholder="Symbole (ex: AAPL)" required>
+    <input type="number" id="price1" placeholder="Prix 1 (alerte basse)" step="0.01" required>
+    <input type="number" id="price2" placeholder="Prix 2 (alerte haute)" step="0.01" required>
+    <button type="submit">Ajouter</button>
+  </form>
+
+  <h2>Mes Alertes</h2>
+  <ul id="stockList"></ul>
+
+  <script src="script.js"></script>
+</body>
+</html>
