@@ -5,28 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Trading Dashboard</title>
   <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Dashboard de Trading</h1>
+      <h1>Trading Matrix</h1>
     </header>
     <section class="input-section">
       <form id="stockForm">
-        <input type="text" id="symbol" placeholder="Symbole (ex: AAPL)" required>
+        <input type="text" id="symbol" placeholder="Ticker (ex: AAPL)" required>
         <input type="number" id="price1" placeholder="Seuil bas" step="0.01" required>
         <input type="number" id="price2" placeholder="Seuil haut" step="0.01" required>
         <button type="submit">Ajouter</button>
       </form>
     </section>
     <section class="dashboard">
-      <h2>Mes Actifs</h2>
+      <h2>Actifs en Surveillance</h2>
       <table id="stockTable">
         <thead>
           <tr>
             <th>Nom</th>
             <th>Ticker</th>
-            <th>Prix Actuel</th>
+            <th>Prix</th>
             <th>Seuil Bas</th>
             <th>Seuil Haut</th>
             <th>Combo (Weekly)</th>
