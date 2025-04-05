@@ -20,8 +20,21 @@
       </form>
     </section>
     <section class="dashboard">
-      <h2>Mes Alertes</h2>
-      <div id="stockList" class="stock-grid"></div>
+      <h2>Mes Actifs</h2>
+      <table id="stockTable">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Ticker</th>
+            <th>Prix Actuel</th>
+            <th>Seuil Bas</th>
+            <th>Seuil Haut</th>
+            <th>Combo (Weekly)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="stockList"></tbody>
+      </table>
     </section>
   </div>
   <script src="script.js"></script>
