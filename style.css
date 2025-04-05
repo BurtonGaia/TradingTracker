@@ -6,7 +6,7 @@ body {
 }
 
 .dashboard-container {
-    max-width: 800px;
+    max-width: 95%; /* Elargissement du conteneur principal */
     margin: 0 auto;
     background-color: #fff;
     padding: 20px;
@@ -57,11 +57,12 @@ h1, h2 {
 }
 
 #tickers-list li {
-    display: flex;
+    display: grid; /* Utilisation de grid pour un meilleur contrôle de la disposition */
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; /* Définition des colonnes */
     align-items: center;
-    justify-content: space-between;
     padding: 10px 0;
     border-bottom: 1px solid #eee;
+    gap: 10px; /* Espacement entre les colonnes */
 }
 
 #tickers-list li:last-child {
@@ -69,11 +70,14 @@ h1, h2 {
 }
 
 .ticker-info {
-    flex-grow: 1;
+    display: flex; /* Pour aligner les spans à l'intérieur */
+    flex-direction: column; /* Affichage des informations sur des lignes */
+    gap: 5px;
 }
 
-.ticker-info span {
-    margin-right: 15px;
+.ticker-info span strong {
+    font-weight: bold;
+    margin-right: 5px; /* Un peu d'espace après le label */
 }
 
 .actions-buttons button {
@@ -97,12 +101,23 @@ h1, h2 {
 
 .edit-form {
     display: none; /* Initialement caché */
+    grid-column: 1 / -1; /* Prend toute la largeur */
     margin-top: 10px;
+    padding: 10px;
+    background-color: #f0f8ff; /* Couleur de fond légère pour distinguer */
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: auto auto auto auto; /* Alignement des labels et inputs */
+    gap: 10px;
+    align-items: center;
+}
+
+.edit-form label {
+    font-weight: bold;
 }
 
 .edit-form input[type="number"] {
     padding: 8px;
-    margin-right: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
