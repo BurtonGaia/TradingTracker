@@ -1,4 +1,4 @@
-const apiKey = 'cvopq21r01qihjtq7uagcvopq21r01qihjtq7ub0'; // Remplacez par votre clé API Finnhub
+const apiKey = 'cvopq21r01qihjtq7uagcvopq21r01qihjtq7ub0';
 const toggleAddTickerButton = document.getElementById('toggle-add-ticker');
 const addTickerModal = document.getElementById('add-ticker-modal');
 const closeButton = document.querySelector('.close-button');
@@ -7,15 +7,36 @@ const suggestionsList = document.getElementById('suggestions');
 const price1ModalInput = document.getElementById('price1-modal');
 const price2ModalInput = document.getElementById('price2-modal');
 const addButtonModal = document.getElementById('add-button-modal');
-const watchlist = document.getElementById('watchlist');
+const watchlistList = document.getElementById('watchlist');
+const scoreCardsContainer = document.getElementById('score-cards-container');
 const notificationDiv = document.createElement('div');
 notificationDiv.classList.add('notification');
 document.body.appendChild(notificationDiv);
 const activeAlertsList = document.getElementById('active-alerts');
+const watchlistSection = document.querySelector('.watchlist-section');
+const scoreCardsSection = document.querySelector('.score-cards-section');
+const displayModeSelector = document.getElementById('display-mode');
 
 let trackedTickers = loadWatchlist();
 let allSymbols = [];
 let activeAlerts = {};
+let displayMode = localStorage.getItem('displayMode') || 'list';
+
+// Function to switch display mode
+function switchDisplayMode(mode) {
+    displayMode = mode;
+    localStorage.setItem('displayMode', mode);
+    renderWatchlist();
+}
+
+// Écouteur d'événements pour le changement de mode d'affichage
+displayModeSelector.addEventListener('change', (event) => {
+    switchDisplayMode(event.target.value);
+});
+
+// Initialisation du mode d'affichage au chargement de la page
+switchDisplayMode(displayMode);
+displayModeSelector.value = displayMode;
 
 // Fetch all symbols for autocompletion
 async function fetchAllSymbols() {
@@ -46,7 +67,7 @@ function displaySuggestions(query) {
     const filteredSymbols = allSymbols.filter(item =>
         item.symbol.toLowerCase().includes(query.toLowerCase()) ||
         item.name.toLowerCase().includes(query.toLowerCase())
-    ).slice(0, 10); // Limit to 10 suggestions
+    ).slice(0, 10);
 
     if (filteredSymbols.length > 0) {
         suggestionsList.style.display = 'block';
@@ -75,7 +96,6 @@ document.addEventListener('click', (event) => {
         suggestionsList.style.display = 'none';
     }
 });
-
 // Function to show the add ticker modal
 function openAddTickerModal() {
     addTickerModal.style.display = 'block';
@@ -141,6 +161,23 @@ async function fetchCurrentPrice(ticker) {
     }
 }
 
+// Function to fetch historical prices for the mini-graph
+async function fetchHistoricalPrices(ticker) {
+    const now = Math.floor(Date.now() / 1000);
+    const from = now - (24 * 60 * 60); // Last 24 hours (in seconds)
+    try {
+        const response = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${ticker}&resolution=60&from=${from}&to=${now}&token=${apiKey}`);
+        if (!response.ok) {
+            console.warn(`Impossible de récupérer l'historique pour ${ticker}: ${response.status}`);
+            return { t: [], c: [] };
+        }
+        const data = await response.json();
+        return { timestamps: data.t || [], closingPrices: data.c || [] };
+    } catch (error) {
+        console.error(`Erreur lors de la récupération de l'historique pour ${ticker}:`, error);
+        return { timestamps: [], closingPrices: [] };
+    }
+}
 // Function to add a ticker to the watchlist (using modal inputs)
 async function addTickerToWatchlistModal() {
     const selectedTicker = tickerSearchInput.value.trim().toUpperCase();
@@ -232,12 +269,16 @@ async function updateCurrentPrices() {
             item.isAlerting = isAlerting;
             item.alertMessage = alertMessage;
             item.currentPrice = currentPrice.toFixed(2);
+
+            // Fetch historical data for the graph
+            const historicalData = await fetchHistoricalPrices(item.ticker);
+            item.historicalData = historicalData;
         }
         updatedTickers.push(item);
     }
 
     trackedTickers = updatedTickers;
-    activeAlerts = {}; // Reset active alerts
+    activeAlerts = {};
     trackedTickers.forEach(tickerData => {
         if (tickerData.isAlerting && tickerData.alertMessage) {
             activeAlerts[tickerData.ticker] = tickerData.alertMessage;
@@ -246,31 +287,114 @@ async function updateCurrentPrices() {
     renderWatchlist();
     renderActiveAlerts();
 }
-
 // Function to render the watchlist
 function renderWatchlist() {
-    watchlist.innerHTML = '';
-    trackedTickers.forEach(item => {
-        const listItem = document.createElement('li');
-        listItem.classList.toggle('alerting', item.isAlerting);
-        listItem.innerHTML = `
-            <span class="ticker">${item.ticker}</span>
-            <span>${item.name}</span>
-            <span>${item.currentPrice !== null ? item.currentPrice : 'N/A'}</span>
-            <span>${item.price1}</span>
-            <span>${item.price2}</span>
-            <button class="delete-button" data-ticker="${item.ticker}">&times;</button>
-        `;
-        watchlist.appendChild(listItem);
-    });
+    watchlistList.innerHTML = '';
+    scoreCardsContainer.innerHTML = '';
+    watchlistSection.style.display = 'none';
+    scoreCardsSection.style.display = 'none';
 
-    const deleteButtons = watchlist.querySelectorAll('.delete-button');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const tickerToDelete = this.dataset.ticker;
-            removeTicker(tickerToDelete);
+    if (displayMode === 'list') {
+        watchlistSection.style.display = 'block';
+        trackedTickers.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.classList.toggle('alerting', item.isAlerting);
+            listItem.innerHTML = `
+                <span class="ticker">${item.ticker}</span>
+                <span>${item.name}</span>
+                <span>${item.currentPrice !== null ? item.currentPrice : 'N/A'}</span>
+                <span>${item.price1}</span>
+                <span>${item.price2}</span>
+                <button class="delete-button" data-ticker="${item.ticker}">&times;</button>
+            `;
+            watchlistList.appendChild(listItem);
         });
-    });
+
+        const deleteButtons = watchlistList.querySelectorAll('.delete-button');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tickerToDelete = this.dataset.ticker;
+                removeTicker(tickerToDelete);
+            });
+        });
+    } else if (displayMode === 'cards') {
+        scoreCardsSection.style.display = 'flex';
+        trackedTickers.forEach(item => {
+            const card = document.createElement('div');
+            card.classList.add('score-card');
+            card.classList.toggle('alerting', item.isAlerting);
+            card.innerHTML = `
+                <div class="score-card-header">
+                    <span class="ticker">${item.ticker}</span>
+                </div>
+                <div class="score-card-info">
+                    <p>Nom: ${item.name}</p>
+                    <p>Prix Actuel: ${item.currentPrice !== null ? item.currentPrice : 'N/A'}</p>
+                    <p>Prix 1: ${item.price1}</p>
+                    <p>Prix 2: ${item.price2}</p>
+                </div>
+                <canvas class="score-card-graph" id="chart-${item.ticker}"></canvas>
+                <button class="delete-button" data-ticker="${item.ticker}">&times;</button>
+            `;
+            scoreCardsContainer.appendChild(card);
+
+            const deleteButton = card.querySelector('.delete-button');
+            deleteButton.addEventListener('click', function() {
+                const tickerToDelete = this.dataset.ticker;
+                removeTicker(tickerToDelete);
+            });
+
+            const chartId = `chart-${item.ticker}`;
+            const ctx = document.getElementById(chartId)?.getContext('2d');
+            if (ctx && item.historicalData && item.historicalData.timestamps && item.historicalData.closingPrices) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: item.historicalData.timestamps.map(ts => new Date(ts * 1000).toLocaleTimeString()),
+                        datasets: [{
+                            label: 'Prix',
+                            data: item.historicalData.closingPrices,
+                            borderColor: '#64b5f6',
+                            backgroundColor: 'rgba(100, 181, 246, 0.2)',
+                            borderWidth: 1,
+                            pointRadius: 0
+                        }, {
+                            label: 'Prix 1',
+                            data: Array(item.historicalData.timestamps.length).fill(item.price1),
+                            borderColor: '#48bb78',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            pointRadius: 0
+                        }, {
+                            label: 'Prix 2',
+                            data: Array(item.historicalData.timestamps.length).fill(item.price2),
+                            borderColor: '#ed8936',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                display: false // Cacher l'axe X pour la brièveté
+                            },
+                            y: {
+                                beginAtZero: false
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
 }
 
 // Function to render active alerts
@@ -284,7 +408,6 @@ function renderActiveAlerts() {
         }
     }
 }
-
 // Function to save and load the watchlist
 function saveWatchlist() {
     localStorage.setItem('tradingDashboardWatchlist', JSON.stringify(trackedTickers));
@@ -301,4 +424,3 @@ fetchAllSymbols().then(() => {
     renderActiveAlerts();
     setInterval(updateCurrentPrices, 10000);
 });
-
