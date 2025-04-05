@@ -1,55 +1,75 @@
-/* style.css */
 body {
-    font-family: sans-serif;
-    margin: 0; /* Supprimer les marges par défaut du body */
-    background-color: #f4f4f4;
-    color: #333;
-    min-height: 100vh; /* Assure que le body prend au moins toute la hauteur de l'écran */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #1a202c; /* Fond sombre et moderne */
+    color: #e2e8f0; /* Texte clair */
+    min-height: 100vh;
     display: flex;
-    justify-content: center; /* Centre le contenu horizontalement */
-    align-items: center; /* Centre le contenu verticalement (facultatif, dépend de la mise en page souhaitée) */
+    justify-content: center;
+    align-items: center;
 }
 
 .dashboard-container {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #2d3748; /* Conteneur plus clair dans le thème sombre */
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-    width: 95vw; /* Prend la quasi-totalité de la largeur de l'écran */
-    max-width: 1200px; /* Limite la largeur maximale pour les grands écrans */
-    height: 90vh; /* Prend la majorité de la hauteur de l'écran */
-    max-height: 900px; /* Limite la hauteur maximale */
-    overflow: hidden; /* Empêche le contenu de dépasser */
+    width: 95vw;
+    max-width: 1200px;
+    height: 90vh;
+    max-height: 900px;
+    overflow: hidden;
 }
 
 header {
-    background-color: #007bff;
-    color: white;
-    padding: 15px;
+    background-color: #4a5568; /* En-tête plus sombre */
+    color: #cbd5e0;
+    padding: 20px;
     text-align: center;
-    border-bottom: 1px solid #0056b3;
+    border-bottom: 1px solid #718096;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2em;
+    font-weight: 500;
 }
 
 main {
     display: flex;
-    flex-grow: 1; /* Permet à main de prendre l'espace restant */
-    padding: 20px;
-    overflow: hidden; /* Empêche le contenu de dépasser */
+    flex-grow: 1;
+    padding: 25px;
+    overflow: hidden;
 }
 
 .watchlist-section {
-    flex-grow: 3; /* La watchlist prend plus de place */
-    padding-right: 20px;
-    border-right: 1px solid #ddd;
-    overflow-y: auto; /* Ajoute une barre de défilement si nécessaire */
+    flex-grow: 3;
+    padding-right: 30px;
+    border-right: 1px solid #4a5568;
+    overflow-y: auto;
+}
+
+.watchlist-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.watchlist-section::-webkit-scrollbar-track {
+    background-color: #2d3748;
+}
+
+.watchlist-section::-webkit-scrollbar-thumb {
+    background-color: #4a5568;
+    border-radius: 4px;
 }
 
 .watchlist-section h2 {
     margin-top: 0;
-    color: #007bff;
+    color: #cbd5e0;
     text-align: left;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    font-weight: 500;
 }
 
 #watchlist {
@@ -60,103 +80,117 @@ main {
 #watchlist li {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr 1fr 1fr 50px;
-    gap: 10px;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+    gap: 15px;
+    padding: 15px;
+    border-bottom: 1px solid #4a5568;
     align-items: center;
+    background-color: #374151; /* Légère variation pour les lignes */
+    border-radius: 6px;
+    margin-bottom: 10px;
 }
 
 #watchlist li:last-child {
     border-bottom: none;
+    margin-bottom: 0;
 }
 
 #watchlist li span {
-    font-size: 14px;
+    font-size: 1em;
+    color: #f7fafc;
 }
 
 #watchlist li .ticker {
     font-weight: bold;
-    color: #333;
+    color: #64b5f6; /* Couleur accent pour le ticker */
 }
 
 .delete-button {
-    background-color: #dc3545;
+    background-color: #e53e3e;
     color: white;
     border: none;
-    border-radius: 4px;
-    padding: 5px 8px;
+    border-radius: 6px;
+    padding: 8px 12px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 0.9em;
     transition: background-color 0.3s ease;
 }
 
 .delete-button:hover {
-    background-color: #c82333;
+    background-color: #c53030;
 }
 
 .add-ticker-section {
-    flex-grow: 1; /* Prend moins de place */
-    padding-left: 20px;
+    flex-grow: 1;
+    padding-left: 30px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
 .add-ticker-section h3 {
-    color: #007bff;
+    color: #cbd5e0;
     text-align: left;
     margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 1.2em; /* Titre plus petit */
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    font-weight: 500;
 }
 
 .input-group {
     display: flex;
-    flex-direction: column; /* Les labels et inputs sont empilés */
-    margin-bottom: 10px;
+    flex-direction: column;
+    margin-bottom: 15px;
 }
 
 .input-group label {
     font-weight: bold;
-    margin-bottom: 5px;
-    font-size: 0.9em;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    color: #cbd5e0;
 }
 
 .input-group input[type="number"],
 .input-group input[type="text"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 0.9em;
+    padding: 10px;
+    border: 1px solid #718096;
+    border-radius: 6px;
+    font-size: 0.95em;
+    background-color: #4a5568;
+    color: #f7fafc;
+}
+
+.input-group input[type="number"]::placeholder,
+.input-group input[type="text"]::placeholder {
+    color: #a0aec0;
 }
 
 #add-button {
-    background-color: #007bff;
+    background-color: #48bb78;
     color: white;
-    padding: 10px 15px;
+    padding: 12px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 1em;
     transition: background-color 0.3s ease;
 }
 
 #add-button:hover {
-    background-color: #0056b3;
+    background-color: #38a169;
 }
 
 .notification {
     position: fixed;
-    top: 20px;
+    top: 30px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #28a745;
+    background-color: #38a169; /* Vert pour succès */
     color: white;
-    padding: 15px 20px;
-    border-radius: 5px;
+    padding: 15px 25px;
+    border-radius: 8px;
     z-index: 1000;
     opacity: 0;
-    transition: opacity 0.5s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
 }
 
 .notification.show {
@@ -164,10 +198,10 @@ main {
 }
 
 .notification.warning {
-    background-color: #ffc107;
-    color: #333;
+    background-color: #ed8936; /* Orange pour avertissement */
+    color: #2d3748;
 }
 
 .notification.error {
-    background-color: #dc3545;
+    background-color: #e53e3e; /* Rouge pour erreur */
 }
