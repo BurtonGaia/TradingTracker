@@ -1,34 +1,128 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  text-align: center;
-  font-family: Arial, sans-serif;
-  max-width: 800px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f7fa;
+  color: #333;
+}
+
+.container {
+  max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
+}
+
+header {
+  text-align: center;
+  padding: 20px 0;
+  background: #2c3e50;
+  color: white;
+  border-radius: 8px 8px 0 0;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+.input-section {
+  background: white;
+  padding: 20px;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 form {
   display: flex;
   gap: 10px;
-  margin: 20px 0;
+  justify-content: center;
 }
 
 input {
-  padding: 5px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
 }
 
 button {
-  padding: 5px 10px;
-  background-color: #007bff;
+  padding: 10px 20px;
+  background: #3498db;
   color: white;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
+  transition: background 0.3s;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
+button:hover {
+  background: #2980b9;
 }
 
-li {
-  margin: 10px 0;
+.dashboard {
+  margin-top: 20px;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.stock-card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stock-card span {
+  font-weight: bold;
+}
+
+.stock-card .price {
+  font-size: 1.2rem;
+  color: #27ae60;
+}
+
+.stock-card .edit-inputs {
+  display: flex;
+  gap: 5px;
+}
+
+.stock-card .edit-inputs input {
+  width: 80px;
+}
+
+.stock-card button {
+  padding: 5px 10px;
+  font-size: 0.9rem;
+}
+
+.delete-btn {
+  background: #e74c3c;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
+}
+
+.edit-btn {
+  background: #f1c40f;
+}
+
+.edit-btn:hover {
+  background: #d4ac0d;
 }
