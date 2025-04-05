@@ -1,4 +1,4 @@
-const apiKey = 'VOTRE_CLE_API_FINNHUB'; // Remplacez par votre clé API
+const apiKey = 'cvopq21r01qihjtq7uagcvopq21r01qihjtq7ub0';
 const toggleAddTickerButton = document.getElementById('toggle-add-ticker');
 const addTickerModal = document.getElementById('add-ticker-modal');
 const closeButton = document.querySelector('.close-button');
@@ -107,10 +107,10 @@ function showNotification(message, type = 'success', duration = 3000) {
     }, duration);
 }
 
-// Function to fetch company profile (unchanged)
+// Function to fetch company profile
 async function fetchCompanyProfile(ticker) {
     try {
-        const response = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=<span class="math-inline">\{ticker\}&token\=</span>{apiKey}`);
+        const response = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apiKey}`);
         if (!response.ok) {
             console.warn(`Impossible de récupérer le profil pour ${ticker}: ${response.status}`);
             return { name: 'N/A' };
@@ -123,10 +123,10 @@ async function fetchCompanyProfile(ticker) {
     }
 }
 
-// Function to fetch current price (unchanged)
+// Function to fetch current price
 async function fetchCurrentPrice(ticker) {
     try {
-        const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=<span class="math-inline">\{ticker\}&token\=</span>{apiKey}`);
+        const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`);
         if (!response.ok) {
             console.warn(`Impossible de récupérer le prix pour ${ticker}: ${response.status}`);
             return { currentPrice: null };
@@ -139,4 +139,137 @@ async function fetchCurrentPrice(ticker) {
     }
 }
 
-// Function
+// Function to add a ticker to the watchlist (using modal inputs)
+async function addTickerToWatchlistModal() {
+    const selectedTicker = tickerSearchInput.value.trim().toUpperCase();
+    const price1 = parseFloat(price1ModalInput.value);
+    const price2 = parseFloat(price2ModalInput.value);
+
+    if (!selectedTicker) {
+        showNotification('Veuillez entrer un ticker.', 'warning');
+        return;
+    }
+
+    if (isNaN(price1) || isNaN(price2)) {
+        showNotification('Veuillez entrer des prix valides.', 'warning');
+        return;
+    }
+
+    if (trackedTickers.some(item => item.ticker === selectedTicker)) {
+        showNotification('Ce ticker est déjà dans votre watchlist.', 'warning');
+        return;
+    }
+
+    try {
+        const [companyInfo, priceInfo] = await Promise.all([
+            fetchCompanyProfile(selectedTicker),
+            fetchCurrentPrice(selectedTicker)
+        ]);
+
+        if (priceInfo.currentPrice === null) {
+            showNotification(`Impossible de récupérer le prix pour ${selectedTicker}. Vérifiez le ticker.`, 'error');
+            return;
+        }
+
+        const newTickerData = {
+            ticker: selectedTicker,
+            name: companyInfo.name,
+            price1: price1,
+            price2: price2,
+            currentPrice: priceInfo.currentPrice
+        };
+
+        trackedTickers.push(newTickerData);
+        saveWatchlist();
+        renderWatchlist();
+        closeAddTickerModal();
+
+    } catch (error) {
+        console.error("Erreur lors de l'ajout du ticker:", error);
+        showNotification("Une erreur s'est produite lors de l'ajout du ticker.", 'error');
+    }
+}
+
+// Event listener for adding ticker from modal
+addButtonModal.addEventListener('click', addTickerToWatchlistModal);
+
+// Function to remove a ticker from the watchlist
+function removeTicker(tickerToRemove) {
+    trackedTickers = trackedTickers.filter(item => item.ticker !== tickerToRemove);
+    saveWatchlist();
+    renderWatchlist();
+}
+
+// Function to update current prices and check thresholds
+async function updateCurrentPrices() {
+    const updatedTickers = [];
+    for (const item of trackedTickers) {
+        const priceInfo = await fetchCurrentPrice(item.ticker);
+        if (priceInfo.currentPrice !== null) {
+            const oldPrice = item.currentPrice;
+            const currentPrice = priceInfo.currentPrice.toFixed(2);
+
+            const thresholdPositive1 = item.price1 * 1.02;
+            const thresholdNegative1 = item.price1 * 0.98;
+            const thresholdPositive2 = item.price2 * 1.02;
+            const thresholdNegative2 = item.price2 * 0.98;
+
+            if (oldPrice !== null) {
+                if (currentPrice >= thresholdPositive2 && oldPrice < thresholdPositive2) {
+                    showNotification(`Alerte: ${item.ticker} a atteint ou dépassé +2% de Prix 2 (${item.price2}) !`, 'warning');
+                } else if (currentPrice <= thresholdNegative2 && oldPrice > thresholdNegative2) {
+                    showNotification(`Alerte: ${item.ticker} a atteint ou dépassé -2% de Prix 2 (${item.price2}) !`, 'warning');
+                } else if (currentPrice >= thresholdPositive1 && oldPrice < thresholdPositive1) {
+                    showNotification(`Alerte: ${item.ticker} a atteint ou dépassé +2% de Prix 1 (${item.price1}) !`, 'warning');
+                } else if (currentPrice <= thresholdNegative1 && oldPrice > thresholdNegative1) {
+                    showNotification(`Alerte: ${item.ticker} a atteint ou dépassé -2% de Prix 1 (${item.price1}) !`, 'warning');
+                }
+            }
+            item.currentPrice = currentPrice;
+        }
+        updatedTickers.push(item);
+    }
+    trackedTickers = updatedTickers; // Update global trackedTickers after all fetches
+    renderWatchlist();
+}
+
+// Function to render the watchlist
+function renderWatchlist() {
+    watchlist.innerHTML = '';
+    trackedTickers.forEach(item => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+            <span class="ticker">${item.ticker}</span>
+            <span>${item.name}</span>
+            <span>Prix actuel: ${item.currentPrice !== null ? item.currentPrice : 'N/A'}</span>
+            <span>Prix 1: ${item.price1}</span>
+            <span>Prix 2: ${item.price2}</span>
+            <button class="delete-button" data-ticker="${item.ticker}">Supprimer</button>
+        `;
+        watchlist.appendChild(listItem);
+    });
+
+    const deleteButtons = document.querySelectorAll('.delete-button');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tickerToDelete = this.dataset.ticker;
+            removeTicker(tickerToDelete);
+        });
+    });
+}
+
+// Function to save and load the watchlist
+function saveWatchlist() {
+    localStorage.setItem('tradingDashboardWatchlist', JSON.stringify(trackedTickers));
+}
+
+function loadWatchlist() {
+    const storedWatchlist = localStorage.getItem('tradingDashboardWatchlist');
+    return storedWatchlist ? JSON.parse(storedWatchlist) : [];
+}
+
+// Initial setup
+fetchAllSymbols().then(() => {
+    renderWatchlist();
+    setInterval(updateCurrentPrices, 10000);
+});
