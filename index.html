@@ -10,7 +10,29 @@
     <div class="dashboard-container">
         <header>
             <h1>Mon Dashboard de Trading</h1>
+            <button id="toggle-add-ticker" aria-label="Ajouter un nouveau ticker">+</button>
         </header>
+
+        <div id="add-ticker-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h3>Ajouter un Ticker</h3>
+                <div class="input-group">
+                    <label for="ticker-search">Ticker:</label>
+                    <input type="text" id="ticker-search" placeholder="Rechercher un ticker">
+                    <ul id="suggestions"></ul>
+                </div>
+                <div class="input-group">
+                    <label for="price1-modal">Prix 1:</label>
+                    <input type="number" id="price1-modal" placeholder="Prix 1">
+                </div>
+                <div class="input-group">
+                    <label for="price2-modal">Prix 2:</label>
+                    <input type="number" id="price2-modal" placeholder="Prix 2">
+                </div>
+                <button id="add-button-modal">Ajouter</button>
+            </div>
+        </div>
 
         <main>
             <section class="watchlist-section">
@@ -18,23 +40,6 @@
                 <ul id="watchlist">
                     </ul>
             </section>
-
-            <aside class="add-ticker-section">
-                <h3>Ajouter un Ticker</h3>
-                <div class="input-group">
-                    <label for="ticker-input">Ticker:</label>
-                    <input type="text" id="ticker-input" placeholder="Entrer le ticker">
-                </div>
-                <div class="input-group">
-                    <label for="price1">Prix 1:</label>
-                    <input type="number" id="price1" placeholder="Prix 1">
-                </div>
-                <div class="input-group">
-                    <label for="price2">Prix 2:</label>
-                    <input type="number" id="price2" placeholder="Prix 2">
-                </div>
-                <button id="add-button">Ajouter</button>
-            </aside>
         </main>
     </div>
 
