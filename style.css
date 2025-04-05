@@ -1,66 +1,55 @@
-/* style.css - Pas de changements nécessaires */
+/* style.css */
 body {
     font-family: sans-serif;
-    margin: 20px;
+    margin: 0; /* Supprimer les marges par défaut du body */
     background-color: #f4f4f4;
     color: #333;
+    min-height: 100vh; /* Assure que le body prend au moins toute la hauteur de l'écran */
+    display: flex;
+    justify-content: center; /* Centre le contenu horizontalement */
+    align-items: center; /* Centre le contenu verticalement (facultatif, dépend de la mise en page souhaitée) */
 }
 
 .dashboard-container {
-    max-width: 800px;
-    margin: 0 auto;
     background-color: #fff;
-    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-h1, h2 {
-    text-align: center;
-    color: #007bff;
-}
-
-.add-ticker-section, .watchlist-section {
-    margin-bottom: 20px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-.input-group {
-    margin-bottom: 10px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    width: 95vw; /* Prend la quasi-totalité de la largeur de l'écran */
+    max-width: 1200px; /* Limite la largeur maximale pour les grands écrans */
+    height: 90vh; /* Prend la majorité de la hauteur de l'écran */
+    max-height: 900px; /* Limite la hauteur maximale */
+    overflow: hidden; /* Empêche le contenu de dépasser */
 }
 
-.input-group label {
-    width: 80px;
-    margin-right: 10px;
-    font-weight: bold;
-}
-
-.input-group input[type="number"],
-.input-group input[type="text"] {
-    flex-grow: 1;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-#add-button {
+header {
     background-color: #007bff;
     color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid #0056b3;
 }
 
-#add-button:hover {
-    background-color: #0056b3;
+main {
+    display: flex;
+    flex-grow: 1; /* Permet à main de prendre l'espace restant */
+    padding: 20px;
+    overflow: hidden; /* Empêche le contenu de dépasser */
+}
+
+.watchlist-section {
+    flex-grow: 3; /* La watchlist prend plus de place */
+    padding-right: 20px;
+    border-right: 1px solid #ddd;
+    overflow-y: auto; /* Ajoute une barre de défilement si nécessaire */
+}
+
+.watchlist-section h2 {
+    margin-top: 0;
+    color: #007bff;
+    text-align: left;
+    margin-bottom: 15px;
 }
 
 #watchlist {
@@ -70,7 +59,7 @@ h1, h2 {
 
 #watchlist li {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 50px; /* Ajout d'une colonne pour le bouton supprimer */
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 50px;
     gap: 10px;
     padding: 10px;
     border-bottom: 1px solid #eee;
@@ -105,12 +94,63 @@ h1, h2 {
     background-color: #c82333;
 }
 
+.add-ticker-section {
+    flex-grow: 1; /* Prend moins de place */
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.add-ticker-section h3 {
+    color: #007bff;
+    text-align: left;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2em; /* Titre plus petit */
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column; /* Les labels et inputs sont empilés */
+    margin-bottom: 10px;
+}
+
+.input-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.input-group input[type="number"],
+.input-group input[type="text"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+#add-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+#add-button:hover {
+    background-color: #0056b3;
+}
+
 .notification {
     position: fixed;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #28a745; /* Vert pour succès */
+    background-color: #28a745;
     color: white;
     padding: 15px 20px;
     border-radius: 5px;
@@ -124,10 +164,10 @@ h1, h2 {
 }
 
 .notification.warning {
-    background-color: #ffc107; /* Jaune pour avertissement */
+    background-color: #ffc107;
     color: #333;
 }
 
 .notification.error {
-    background-color: #dc3545; /* Rouge pour erreur */
+    background-color: #dc3545;
 }
