@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard Trading</title>
-  <link rel="stylesheet" href="styles.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Dashboard Trading</h1>
-    <form id="tickerForm">
-      <input type="text" id="ticker" placeholder="Ticker (ex: AAPL)" required />
-      <input type="number" id="price1" placeholder="Prix 1" step="0.01" required />
-      <input type="number" id="price2" placeholder="Prix 2" step="0.01" required />
-      <button type="submit">Ajouter</button>
-    </form>
-    <div id="tickerList"></div>
-  </div>
-  <audio id="alertSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
-  <script src="scripts.js"></script>
+    <div class="container">
+        <h1>Trading Dashboard</h1>
+        
+        <div class="ticker-form">
+            <input type="text" id="tickerInput" placeholder="Ticker (ex: AAPL)">
+            <input type="number" id="price1Input" placeholder="Prix 1" step="0.01">
+            <input type="number" id="price2Input" placeholder="Prix 2" step="0.01">
+            <button onclick="addTicker()">Ajouter</button>
+        </div>
+
+        <div class="ticker-list" id="tickerList"></div>
+    </div>
+    <audio id="alertSound" src="https://www.soundjay.com/buttons/beep-01a.mp3"></audio>
+    <script src="scripts.js"></script>
 </body>
 </html>
