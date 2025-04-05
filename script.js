@@ -241,10 +241,10 @@ function renderWatchlist() {
         listItem.innerHTML = `
             <span class="ticker">${item.ticker}</span>
             <span>${item.name}</span>
-            <span>Prix actuel: ${item.currentPrice !== null ? item.currentPrice : 'N/A'}</span>
-            <span>Prix 1: ${item.price1}</span>
-            <span>Prix 2: ${item.price2}</span>
-            <button class="delete-button" data-ticker="${item.ticker}">Supprimer</button>
+            <span>${item.currentPrice !== null ? item.currentPrice : 'N/A'}</span>
+            <span>${item.price1}</span>
+            <span>${item.price2}</span>
+            <button class="delete-button" data-ticker="${item.ticker}">&times;</button>
         `;
         watchlist.appendChild(listItem);
     });
