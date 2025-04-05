@@ -5,34 +5,34 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f4f7fa;
-  color: #333;
+  font-family: 'Roboto', sans-serif;
+  background: #eef2f7;
+  color: #2d3748;
 }
 
 .container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
 
 header {
   text-align: center;
-  padding: 20px 0;
-  background: #2c3e50;
-  color: white;
-  border-radius: 8px 8px 0 0;
+  padding: 15px 0;
+  background: #1a202c;
+  color: #edf2f7;
 }
 
 h1 {
-  font-size: 2rem;
+  font-size: 1.8rem;
 }
 
 .input-section {
-  background: white;
-  padding: 20px;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  background: #fff;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 form {
@@ -42,87 +42,95 @@ form {
 }
 
 input {
-  padding: 10px;
-  border: 1px solid #ddd;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 button {
-  padding: 10px 20px;
-  background: #3498db;
-  color: white;
+  padding: 8px 15px;
+  background: #4a5568;
+  color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.2s;
 }
 
 button:hover {
-  background: #2980b9;
+  background: #2d3748;
 }
 
 .dashboard {
-  margin-top: 20px;
+  background: #fff;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 h2 {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   margin-bottom: 10px;
   text-align: center;
 }
 
-.stock-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 15px;
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.stock-card {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+th, td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.stock-card span {
-  font-weight: bold;
+th {
+  background: #edf2f7;
+  font-weight: 600;
 }
 
-.stock-card .price {
-  font-size: 1.2rem;
-  color: #27ae60;
+td {
+  font-size: 0.9rem;
 }
 
-.stock-card .edit-inputs {
+.current-price {
+  color: #38a169;
+  font-weight: 500;
+}
+
+.edit-inputs {
   display: flex;
   gap: 5px;
 }
 
-.stock-card .edit-inputs input {
-  width: 80px;
-}
-
-.stock-card button {
-  padding: 5px 10px;
-  font-size: 0.9rem;
+.edit-inputs input {
+  width: 60px;
 }
 
 .delete-btn {
-  background: #e74c3c;
+  background: #e53e3e;
 }
 
 .delete-btn:hover {
-  background: #c0392b;
+  background: #c53030;
 }
 
 .edit-btn {
-  background: #f1c40f;
+  background: #ecc94b;
+  margin-right: 5px;
 }
 
 .edit-btn:hover {
-  background: #d4ac0d;
+  background: #d69e2e;
+}
+
+.combo-yes {
+  color: #38a169;
+  font-weight: bold;
+}
+
+.combo-no {
+  color: #e53e3e;
 }
