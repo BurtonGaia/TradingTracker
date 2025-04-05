@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newTickerInput = document.getElementById('new-ticker');
     const price1Input = document.getElementById('price-1');
     const price2Input = document.getElementById('price-2');
+    const finnhubApiKey = 'cvopq21r01qihjtq7uagcvopq21r01qihjtq7ub0'; // Remplacez par votre clé API Finnhub
 
     let tickers = []; // Tableau pour stocker les informations des tickers
 
@@ -39,28 +40,30 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchCurrentPrices(); // Mettre à jour les prix actuels après le rendu
     }
 
-    // Fonction pour récupérer le nom de l'actif (simulée ici)
+    // Fonction pour récupérer le nom de l'actif via l'API Finnhub (profil de l'entreprise)
     async function fetchAssetName(ticker) {
-        // Dans une application réelle, vous feriez un appel API ici
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simule un délai d'appel API
-        const mockData = {
-            "AAPL": "Apple Inc.",
-            "GOOGL": "Alphabet Inc. (Class A)",
-            "MSFT": "Microsoft Corporation"
-        };
-        return mockData[ticker.toUpperCase()] || null;
+        const url = `https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${finnhubApiKey}`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.name || null;
+        } catch (error) {
+            console.error(`Erreur lors de la récupération du nom pour ${ticker}:`, error);
+            return null;
+        }
     }
 
-    // Fonction pour récupérer le prix actuel (simulée ici)
+    // Fonction pour récupérer le prix actuel via l'API Finnhub (prix en temps réel)
     async function fetchCurrentPrice(ticker) {
-        // Dans une application réelle, vous feriez un appel API ici (par exemple, via une API de données boursières)
-        await new Promise(resolve => setTimeout(resolve, 300)); // Simule un délai d'appel API
-        const mockPrices = {
-            "AAPL": (Math.random() * 50 + 150).toFixed(2),
-            "GOOGL": (Math.random() * 500 + 2500).toFixed(2),
-            "MSFT": (Math.random() * 100 + 300).toFixed(2)
-        };
-        return mockPrices[ticker.toUpperCase()] || '--';
+        const url = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${finnhubApiKey}`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.c || '--'; // 'c' représente le prix actuel
+        } catch (error) {
+            console.error(`Erreur lors de la récupération du prix pour ${ticker}:`, error);
+            return '--';
+        }
     }
 
     // Fonction pour mettre à jour les prix actuels affichés
@@ -178,4 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Rendu initial des tickers (si vous avez des données initiales)
     renderTickers();
+
+    // Mettre à jour les prix en temps réel (rafraîchissement toutes les quelques secondes)
+    setInterval(fetchCurrentPrices, 5000); // Rafraîchir toutes les 5 secondes (ajustez selon vos besoins et les limites de l'API)
 });
