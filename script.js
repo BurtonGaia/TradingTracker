@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addTickerBtn = document.getElementById('add-ticker-btn');
     const tickersBody = document.getElementById('tickers-body');
     const newTickerInput = document.getElementById('new-ticker');
-    const finnhubApiKey = 'cvopq21r01qihjtq7uagcvopq21r01qihjtq7ub0';
+    const finnhubApiKey = 'VOTRE_CLE_API_FINNHUB'; // Remplacez par votre clé API Finnhub
     const localStorageKey = 'tradingDashboardData';
 
     let tickers = loadTickers(); // Charger les données sauvegardées
@@ -87,14 +87,14 @@ document.addEventListener('DOMContentLoaded', () => {
     async function saveEditedRow(index) {
         console.log('saveEditedRow appelée avec index:', index);
         const row = tickersBody.rows[index];
-        const tickerInput = row.querySelector('input[type="text"]');
-        const price1Input = row.querySelector('input[type="number"]:nth-child(1)');
-        const price2Input = row.querySelector('input[type="number"]:nth-child(2)');
+        const tickerInput = row.cells[0].querySelector('input[type="text"]');
+        const price1Input = row.cells[3].querySelector('input[type="number"]');
+        const price2Input = row.cells[4].querySelector('input[type="number"]');
 
         if (tickerInput) {
             const newTicker = tickerInput.value.trim().toUpperCase();
-            const newPrice1 = parseFloat(price1Input.value);
-            const newPrice2 = parseFloat(price2Input.value);
+            const newPrice1 = parseFloat(price1Input ? price1Input.value : null); // Vérification si l'input existe
+            const newPrice2 = parseFloat(price2Input ? price2Input.value : null); // Vérification si l'input existe
 
             console.log('newTicker:', newTicker, 'newPrice1:', newPrice1, 'newPrice2:', newPrice2);
 
