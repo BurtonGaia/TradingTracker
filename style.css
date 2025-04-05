@@ -16,9 +16,9 @@ body {
     display: flex;
     flex-direction: column;
     width: 95vw;
-    max-width: 1400px; /* Increased max-width to accommodate the alerts panel */
+    max-width: 1200px;
     height: 90vh;
-    max-height: 900px;
+    max-height: 800px;
     overflow: hidden;
 }
 
@@ -36,26 +36,6 @@ header h1 {
     margin: 0;
     font-size: 2em;
     font-weight: 500;
-}
-
-.interface-selector {
-    display: flex;
-    align-items: center;
-}
-
-.interface-selector label {
-    color: #cbd5e0;
-    margin-right: 10px;
-}
-
-.interface-selector select {
-    background-color: #4a5568;
-    color: #cbd5e0;
-    border: 1px solid #718096;
-    border-radius: 4px;
-    padding: 8px;
-    font-size: 0.9em;
-    cursor: pointer;
 }
 
 #toggle-add-ticker {
@@ -80,12 +60,12 @@ header h1 {
 main {
     display: flex;
     flex-grow: 1;
-    padding: 15px; /* Reduced padding in main */
+    padding: 15px;
     overflow: hidden;
 }
 
 .watchlist-section {
-    flex-grow: 2; /* Adjusted flex-grow */
+    flex-grow: 2;
     overflow-y: auto;
     padding-right: 15px;
 }
@@ -107,20 +87,20 @@ main {
     margin-top: 0;
     color: #cbd5e0;
     text-align: left;
-    margin-bottom: 10px; /* Reduced margin-bottom */
+    margin-bottom: 10px;
     font-size: 1.6em;
     font-weight: 500;
 }
 
 .watchlist-header {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 30px; /* Reduced width for actions */
-    gap: 10px; /* Reduced gap */
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 30px;
+    gap: 10px;
     padding: 8px 10px;
     color: #a0aec0;
     font-weight: bold;
     border-bottom: 1px solid #4a5568;
-    margin-bottom: 8px; /* Reduced margin-bottom */
+    margin-bottom: 8px;
     font-size: 0.85em;
 }
 
@@ -139,15 +119,15 @@ main {
 
 #watchlist li {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 30px; /* Reduced width for actions */
-    gap: 10px; /* Reduced gap */
-    padding: 8px 10px; /* Reduced padding */
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr 30px;
+    gap: 10px;
+    padding: 8px 10px;
     border-bottom: 1px solid #4a5568;
     align-items: center;
     background-color: #374151;
-    border-radius: 4px; /* Reduced border-radius */
-    margin-bottom: 6px; /* Reduced margin-bottom */
-    min-height: 30px; /* Reduced min-height */
+    border-radius: 4px;
+    margin-bottom: 6px;
+    min-height: 30px;
     font-size: 0.9em;
 }
 
@@ -225,12 +205,12 @@ main {
     font-weight: 500;
 }
 
-#active-alerts, #active-alerts-detailed {
+#active-alerts {
     list-style: none;
     padding: 0;
 }
 
-#active-alerts li, #active-alerts-detailed li {
+#active-alerts li {
     background-color: #374151;
     border-radius: 4px;
     padding: 8px;
@@ -240,12 +220,12 @@ main {
     border-left: 3px solid #e53e3e;
 }
 
-#active-alerts li span, #active-alerts-detailed li span {
+#active-alerts li span {
     font-weight: bold;
     color: #64b5f6;
 }
 
-/* Modal Styles (no changes needed) */
+/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
