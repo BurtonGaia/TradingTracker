@@ -13,15 +13,25 @@
         <div class="input-section">
             <h2>Ajouter un Ticker</h2>
             <input type="text" id="new-ticker" placeholder="Ticker (ex: AAPL)">
-            <input type="number" id="price-1" placeholder="Prix 1">
-            <input type="number" id="price-2" placeholder="Prix 2">
             <button id="add-ticker-btn">Ajouter</button>
         </div>
 
-        <div class="tickers-list-section">
+        <div class="tickers-table-section">
             <h2>Suivi des Actions</h2>
-            <ul id="tickers-list">
-                </ul>
+            <table id="tickers-table">
+                <thead>
+                    <tr>
+                        <th>Ticker</th>
+                        <th>Nom Actif</th>
+                        <th>Prix Actuel</th>
+                        <th>Prix 1</th>
+                        <th>Prix 2</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tickers-body">
+                    </tbody>
+            </table>
         </div>
     </div>
 
