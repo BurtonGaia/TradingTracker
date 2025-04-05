@@ -11,9 +11,11 @@ const watchlist = document.getElementById('watchlist');
 const notificationDiv = document.createElement('div');
 notificationDiv.classList.add('notification');
 document.body.appendChild(notificationDiv);
+const activeAlertsList = document.getElementById('active-alerts');
 
 let trackedTickers = loadWatchlist();
-let allSymbols = []; // Store all available symbols for autocompletion
+let allSymbols = [];
+let activeAlerts = {}; // Object to store active alerts by ticker
 
 // Fetch all symbols for autocompletion
 async function fetchAllSymbols() {
@@ -203,34 +205,37 @@ function removeTicker(tickerToRemove) {
 // Function to update current prices and check thresholds
 async function updateCurrentPrices() {
     const updatedTickers = [];
+    const currentActiveAlerts = {};
+
     for (const item of trackedTickers) {
         const priceInfo = await fetchCurrentPrice(item.ticker);
         if (priceInfo.currentPrice !== null) {
-            const oldPrice = item.currentPrice;
-            const currentPrice = priceInfo.currentPrice.toFixed(2);
+            const currentPrice = priceInfo.currentPrice;
+            const thresholdPositive1 = item.price1 * 1.03;
+            const thresholdNegative1 = item.price1 * 0.97;
+            const thresholdPositive2 = item.price2 * 1.03;
+            const thresholdNegative2 = item.price2 * 0.97;
 
-            const thresholdPositive1 = item.price1 * 1.02;
-            const thresholdNegative1 = item.price1 * 0.98;
-            const thresholdPositive2 = item.price2 * 1.02;
-            const thresholdNegative2 = item.price2 * 0.98;
+            let isAlerting = false;
 
-            if (oldPrice !== null) {
-                if (currentPrice >= thresholdPositive2 && oldPrice < thresholdPositive2) {
-                    showNotification(`Alerte: ${item.ticker} a atteint ou dépassé +2% de Prix 2 (${item.price2}) !`, 'warning');
-                } else if (currentPrice <= thresholdNegative2 && oldPrice > thresholdNegative2) {
-                    showNotification(`Alerte: ${item.ticker} a atteint ou dépassé -2% de Prix 2 (${item.price2}) !`, 'warning');
-                } else if (currentPrice >= thresholdPositive1 && oldPrice < thresholdPositive1) {
-                    showNotification(`Alerte: ${item.ticker} a atteint ou dépassé +2% de Prix 1 (${item.price1}) !`, 'warning');
-                } else if (currentPrice <= thresholdNegative1 && oldPrice > thresholdNegative1) {
-                    showNotification(`Alerte: ${item.ticker} a atteint ou dépassé -2% de Prix 1 (${item.price1}) !`, 'warning');
-                }
+            if (currentPrice >= thresholdPositive1 || currentPrice <= thresholdNegative1) {
+                currentActiveAlerts[item.ticker] = `Alerte: ${item.ticker} proche de Prix 1 (${item.price1.toFixed(2)}) - Prix actuel: ${currentPrice.toFixed(2)}`;
+                isAlerting = true;
+            } else if (currentPrice >= thresholdPositive2 || currentPrice <= thresholdNegative2) {
+                currentActiveAlerts[item.ticker] = `Alerte: ${item.ticker} proche de Prix 2 (${item.price2.toFixed(2)}) - Prix actuel: ${currentPrice.toFixed(2)}`;
+                isAlerting = true;
             }
-            item.currentPrice = currentPrice;
+
+            item.isAlerting = isAlerting;
+            item.currentPrice = currentPrice.toFixed(2);
         }
         updatedTickers.push(item);
     }
-    trackedTickers = updatedTickers; // Update global trackedTickers after all fetches
+
+    trackedTickers = updatedTickers;
+    activeAlerts = currentActiveAlerts;
     renderWatchlist();
+    renderActiveAlerts();
 }
 
 // Function to render the watchlist
@@ -238,6 +243,7 @@ function renderWatchlist() {
     watchlist.innerHTML = '';
     trackedTickers.forEach(item => {
         const listItem = document.createElement('li');
+        listItem.classList.toggle('alerting', item.isAlerting);
         listItem.innerHTML = `
             <span class="ticker">${item.ticker}</span>
             <span>${item.name}</span>
@@ -258,6 +264,18 @@ function renderWatchlist() {
     });
 }
 
+// Function to render active alerts
+function renderActiveAlerts() {
+    activeAlertsList.innerHTML = '';
+    for (const ticker in activeAlerts) {
+        if (activeAlerts.hasOwnProperty(ticker)) {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `<span>${ticker}</span>: ${activeAlerts[ticker]}`;
+            activeAlertsList.appendChild(listItem);
+        }
+    }
+}
+
 // Function to save and load the watchlist
 function saveWatchlist() {
     localStorage.setItem('tradingDashboardWatchlist', JSON.stringify(trackedTickers));
@@ -271,5 +289,6 @@ function loadWatchlist() {
 // Initial setup
 fetchAllSymbols().then(() => {
     renderWatchlist();
+    renderActiveAlerts();
     setInterval(updateCurrentPrices, 10000);
 });
