@@ -38,6 +38,26 @@ header h1 {
     font-weight: 500;
 }
 
+.interface-selector {
+    display: flex;
+    align-items: center;
+}
+
+.interface-selector label {
+    color: #cbd5e0;
+    margin-right: 10px;
+}
+
+.interface-selector select {
+    background-color: #4a5568;
+    color: #cbd5e0;
+    border: 1px solid #718096;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
 #toggle-add-ticker {
     background-color: #48bb78;
     color: white;
@@ -205,12 +225,12 @@ main {
     font-weight: 500;
 }
 
-#active-alerts {
+#active-alerts, #active-alerts-detailed {
     list-style: none;
     padding: 0;
 }
 
-#active-alerts li {
+#active-alerts li, #active-alerts-detailed li {
     background-color: #374151;
     border-radius: 4px;
     padding: 8px;
@@ -220,7 +240,7 @@ main {
     border-left: 3px solid #e53e3e;
 }
 
-#active-alerts li span {
+#active-alerts li span, #active-alerts-detailed li span {
     font-weight: bold;
     color: #64b5f6;
 }
