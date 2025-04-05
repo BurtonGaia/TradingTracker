@@ -1,194 +1,153 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const addTickerBtn = document.getElementById('add-ticker-btn');
-    const tickersBody = document.getElementById('tickers-body');
-    const newTickerInput = document.getElementById('new-ticker');
-    const finnhubApiKey = 'VOTRE_CLE_API_FINNHUB'; // Remplacez par votre clé API Finnhub
-    const localStorageKey = 'tradingDashboardData';
+const apiKey = 'cvopq21r01qihjtq7uagcvopq21r01qihjtq7ub0';
+const tickerSelect = document.getElementById('ticker-select');
+const price1Input = document.getElementById('price1');
+const price2Input = document.getElementById('price2');
+const addButton = document.getElementById('add-button');
+const watchlist = document.getElementById('watchlist');
 
-    let tickers = loadTickers(); // Charger les données sauvegardées
-    let editingIndex = -1; // Index de la ligne en cours d'édition
+let trackedTickers = [];
 
-    // Fonction pour sauvegarder les tickers dans le localStorage
-    function saveTickers() {
-        localStorage.setItem(localStorageKey, JSON.stringify(tickers));
-    }
+// Fonction pour récupérer la liste des symboles (vous pouvez la simplifier ou la personnaliser)
+async function fetchSymbols() {
+    try {
+        const response = await fetch(`https://finnhub.io/api/v1/stock/symbol?exchange=US&token=${apiKey}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        // Filtrer et trier les symboles (vous pouvez ajuster le filtre)
+        const filteredSymbols = data
+            .filter(symbol => symbol.type === 'Common Stock' && symbol.displaySymbol.indexOf('.') === -1)
+            .sort((a, b) => a.displaySymbol.localeCompare(b.displaySymbol));
 
-    // Fonction pour charger les tickers depuis le localStorage
-    function loadTickers() {
-        const storedData = localStorage.getItem(localStorageKey);
-        return storedData ? JSON.parse(storedData) : [];
-    }
-
-    // Fonction pour afficher les tickers dans le tableau
-    function renderTickers() {
-        tickersBody.innerHTML = '';
-        tickers.forEach((ticker, index) => {
-            const row = tickersBody.insertRow();
-            row.dataset.index = index; // Stocker l'index dans l'attribut data
-
-            const tickerCell = row.insertCell();
-            const nameCell = row.insertCell();
-            const priceCell = row.insertCell();
-            const price1Cell = row.insertCell();
-            const price2Cell = row.insertCell();
-            const actionsCell = row.insertCell();
-
-            if (editingIndex === index) {
-                row.classList.add('edit-row');
-                tickerCell.innerHTML = `<input type="text" class="edit-input" value="${ticker.symbol}">`;
-                nameCell.textContent = ticker.name || 'N/A';
-                priceCell.textContent = ticker.apiPrice || '--'; // Utiliser apiPrice
-                price1Cell.innerHTML = `<input type="number" class="edit-input" value="${ticker.price1 === null ? '' : ticker.price1}">`;
-                price2Cell.innerHTML = `<input type="number" class="edit-input" value="${ticker.price2 === null ? '' : ticker.price2}">`;
-                actionsCell.classList.add('edit-actions');
-                actionsCell.innerHTML = `
-                    <button class="save-row-btn" data-index="${index}">Sauvegarder</button>
-                    <button class="cancel-row-btn" data-index="${index}">Annuler</button>
-                `;
-
-                const saveButton = actionsCell.querySelector('.save-row-btn');
-                saveButton.addEventListener('click', () => saveEditedRow(index));
-
-                const cancelButton = actionsCell.querySelector('.cancel-row-btn');
-                cancelButton.addEventListener('click', () => {
-                    editingIndex = -1;
-                    renderTickers();
-                });
-
-            } else {
-                tickerCell.textContent = ticker.symbol;
-                nameCell.textContent = ticker.name || 'N/A';
-                priceCell.textContent = ticker.apiPrice || '--'; // Utiliser apiPrice
-                price1Cell.textContent = ticker.price1 === null ? '' : ticker.price1;
-                price2Cell.textContent = ticker.price2 === null ? '' : ticker.price2;
-                actionsCell.innerHTML = `
-                    <button class="action-button edit-btn" data-index="${index}" title="Modifier">M</button>
-                    <button class="action-button delete-btn" data-index="${index}" title="Supprimer">✖</button>
-                `;
-
-                const editButton = actionsCell.querySelector('.edit-btn');
-                editButton.addEventListener('click', () => startEditRow(index));
-
-                const deleteButton = actionsCell.querySelector('.delete-btn');
-                deleteButton.addEventListener('click', () => deleteTicker(index));
-            }
+        filteredSymbols.forEach(symbol => {
+            const option = document.createElement('option');
+            option.value = symbol.displaySymbol;
+            option.textContent = `${symbol.displaySymbol} - ${symbol.description}`;
+            tickerSelect.appendChild(option);
         });
-
-        fetchCurrentApiPrices(); // Utiliser la nouvelle fonction pour les prix API
-        saveTickers(); // Sauvegarder après chaque rendu
+    } catch (error) {
+        console.error('Erreur lors de la récupération des symboles:', error);
     }
+}
 
-    function startEditRow(index) {
-        editingIndex = index;
-        renderTickers();
-    }
-
-    async function saveEditedRow(index) {
-        console.log('saveEditedRow appelée avec index:', index);
-        const row = tickersBody.rows[index];
-        const tickerInput = row.cells[0].querySelector('input[type="text"]');
-        const price1Input = row.cells[3].querySelector('input[type="number"]');
-        const price2Input = row.cells[4].querySelector('input[type="number"]');
-
-        if (tickerInput) {
-            const newTicker = tickerInput.value.trim().toUpperCase();
-            const newPrice1 = parseFloat(price1Input ? price1Input.value : null);
-            const newPrice2 = parseFloat(price2Input ? price2Input.value : null);
-
-            console.log('newTicker:', newTicker, 'newPrice1:', newPrice1, 'newPrice2:', newPrice2);
-
-            if (newTicker) {
-                const existingTickerIndex = tickers.findIndex(t => t.symbol === newTicker && t !== tickers[index]);
-                if (existingTickerIndex === -1) {
-                    const name = await fetchAssetName(newTicker);
-                    tickers[index].symbol = newTicker;
-                    tickers[index].name = name;
-                    tickers[index].price1 = isNaN(newPrice1) ? null : newPrice1;
-                    tickers[index].price2 = isNaN(newPrice2) ? null : newPrice2;
-                    editingIndex = -1;
-                    console.log('tickers après modification:', tickers);
-                    renderTickers();
-                } else {
-                    alert('Ce ticker est déjà suivi.');
-                }
-            } else {
-                alert('Le ticker ne peut pas être vide.');
-            }
+// Fonction pour récupérer les informations de l'actif (nom)
+async function fetchCompanyProfile(ticker) {
+    try {
+        const response = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apiKey}`);
+        if (!response.ok) {
+            console.warn(`Impossible de récupérer le profil pour ${ticker}: ${response.status}`);
+            return { name: 'N/A' };
         }
+        const data = await response.json();
+        return { name: data.name || 'N/A' };
+    } catch (error) {
+        console.error(`Erreur lors de la récupération du profil pour ${ticker}:`, error);
+        return { name: 'N/A' };
+    }
+}
+
+// Fonction pour récupérer le prix actuel
+async function fetchCurrentPrice(ticker) {
+    try {
+        const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`);
+        if (!response.ok) {
+            console.warn(`Impossible de récupérer le prix pour ${ticker}: ${response.status}`);
+            return { currentPrice: 'N/A' };
+        }
+        const data = await response.json();
+        return { currentPrice: data.c !== undefined ? data.c.toFixed(2) : 'N/A' };
+    } catch (error) {
+        console.error(`Erreur lors de la récupération du prix pour ${ticker}:`, error);
+        return { currentPrice: 'N/A' };
+    }
+}
+
+// Fonction pour ajouter un ticker à la watchlist
+async function addTickerToWatchlist() {
+    const selectedTicker = tickerSelect.value;
+    const price1 = parseFloat(price1Input.value);
+    const price2 = parseFloat(price2Input.value);
+
+    if (!selectedTicker || isNaN(price1) || isNaN(price2)) {
+        alert('Veuillez sélectionner un ticker et entrer des prix valides.');
+        return;
     }
 
-    // Fonction pour récupérer le nom de l'actif via l'API Finnhub
-    async function fetchAssetName(ticker) {
-        const url = `https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${finnhubApiKey}`;
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            return data.name || null;
-        } catch (error) {
-            console.error(`Erreur lors de la récupération du nom pour ${ticker}:`, error);
-            return null;
-        }
+    if (trackedTickers.some(item => item.ticker === selectedTicker)) {
+        alert('Ce ticker est déjà dans votre watchlist.');
+        return;
     }
 
-    // Fonction pour récupérer le prix actuel via l'API Finnhub
-    async function fetchCurrentApiPrice(tickerSymbol) { // Renommée pour plus de clarté
-        const url = `https://finnhub.io/api/v1/quote?symbol=${tickerSymbol}&token=${finnhubApiKey}`;
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            return data.c || null; // Retourne null si pas de prix
-        } catch (error) {
-            console.error(`Erreur lors de la récupération du prix pour ${tickerSymbol}:`, error);
-            return null;
-        }
+    const companyInfo = await fetchCompanyProfile(selectedTicker);
+    const priceInfo = await fetchCurrentPrice(selectedTicker);
+
+    const newTickerData = {
+        ticker: selectedTicker,
+        name: companyInfo.name,
+        price1: price1,
+        price2: price2,
+        currentPrice: priceInfo.currentPrice
+    };
+
+    trackedTickers.push(newTickerData);
+    renderWatchlist();
+
+    // Réinitialiser les champs de saisie
+    tickerSelect.value = '';
+    price1Input.value = '';
+    price2Input.value = '';
+}
+
+// Fonction pour supprimer un ticker de la watchlist
+function removeTicker(tickerToRemove) {
+    trackedTickers = trackedTickers.filter(item => item.ticker !== tickerToRemove);
+    renderWatchlist();
+}
+
+// Fonction pour mettre à jour le prix actuel et réafficher la watchlist
+async function updateCurrentPrices() {
+    for (const item of trackedTickers) {
+        const priceInfo = await fetchCurrentPrice(item.ticker);
+        item.currentPrice = priceInfo.currentPrice;
     }
+    renderWatchlist();
+}
 
-    // Fonction pour mettre à jour les prix actuels affichés (API uniquement)
-    async function fetchCurrentApiPrices() { // Renommée pour plus de clarté
-        for (const [index, ticker] of tickers.entries()) {
-            const currentPrice = await fetchCurrentApiPrice(ticker.symbol);
-            tickers[index].apiPrice = currentPrice; // Mettre à jour apiPrice
-            const row = tickersBody.rows[index];
-            if (row) {
-                row.cells[2].textContent = currentPrice === null ? '--' : currentPrice; // Afficher apiPrice
-            }
-        }
-        saveTickers(); // Sauvegarder après la mise à jour des prix API
-    }
-
-    // Ajouter un nouveau ticker
-    addTickerBtn.addEventListener('click', async () => {
-        const newTicker = newTickerInput.value.trim().toUpperCase();
-
-        if (newTicker) {
-            const existingTickerIndex = tickers.findIndex(t => t.symbol === newTicker);
-            if (existingTickerIndex === -1) {
-                const name = await fetchAssetName(newTicker);
-                tickers.push({ symbol: newTicker, name: name, apiPrice: null, price1: null, price2: null });
-                renderTickers();
-                newTickerInput.value = '';
-            } else {
-                alert('Ce ticker est déjà suivi.');
-            }
-        } else {
-            alert('Veuillez saisir un ticker valide.');
-        }
+// Fonction pour afficher la watchlist
+function renderWatchlist() {
+    watchlist.innerHTML = '';
+    trackedTickers.forEach(item => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+            <span class="ticker">${item.ticker}</span>
+            <span>${item.name}</span>
+            <span>Prix actuel: ${item.currentPrice}</span>
+            <span>Prix 1: ${item.price1}</span>
+            <span>Prix 2: ${item.price2}</span>
+            <button class="delete-button" data-ticker="${item.ticker}">Supprimer</button>
+        `;
+        watchlist.appendChild(listItem);
     });
 
-    // Supprimer un ticker (sans confirmation)
-    function deleteTicker(index) {
-        tickers.splice(index, 1);
-        if (editingIndex === index) {
-            editingIndex = -1; // Sortir du mode édition si la ligne est supprimée
-        } else if (editingIndex > index) {
-            editingIndex--; // Ajuster l'index d'édition si une ligne précédente est supprimée
-        }
-        renderTickers();
-    }
+    // Ajouter des gestionnaires d'événements pour les boutons de suppression
+    const deleteButtons = document.querySelectorAll('.delete-button');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tickerToDelete = this.dataset.ticker;
+            removeTicker(tickerToDelete);
+        });
+    });
+}
 
-    // Rendu initial des tickers
-    renderTickers();
+// Événement pour ajouter un ticker
+addButton.addEventListener('click', addTickerToWatchlist);
 
-    // Mettre à jour les prix en temps réel (API uniquement)
-    setInterval(fetchCurrentApiPrices, 5000);
-});
+// Charger la liste des symboles au chargement de la page
+fetchSymbols();
+
+// Mettre à jour les prix actuels toutes les 15 secondes (par exemple)
+setInterval(updateCurrentPrices, 15000);
+
+// Affichage initial de la watchlist (si des données étaient stockées localement, par exemple)
+renderWatchlist();
