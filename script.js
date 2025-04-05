@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentPrice = await fetchCurrentPrice(ticker.symbol);
             ticker.currentPrice = currentPrice;
             const row = tickersBody.rows[index];
-            if (row && editingIndex !== index) {
+            if (row) { // Supprimer la condition editingIndex !== index
                 row.cells[2].textContent = currentPrice;
             }
         }
