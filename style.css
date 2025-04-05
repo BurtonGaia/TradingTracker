@@ -1,3 +1,4 @@
+/* style.css - Pas de changements nécessaires */
 body {
     font-family: sans-serif;
     margin: 20px;
@@ -40,7 +41,7 @@ h1, h2 {
 }
 
 .input-group input[type="number"],
-.input-group select {
+.input-group input[type="text"] {
     flex-grow: 1;
     padding: 8px;
     border: 1px solid #ccc;
@@ -102,4 +103,31 @@ h1, h2 {
 
 .delete-button:hover {
     background-color: #c82333;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #28a745; /* Vert pour succès */
+    color: white;
+    padding: 15px 20px;
+    border-radius: 5px;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.notification.show {
+    opacity: 1;
+}
+
+.notification.warning {
+    background-color: #ffc107; /* Jaune pour avertissement */
+    color: #333;
+}
+
+.notification.error {
+    background-color: #dc3545; /* Rouge pour erreur */
 }
