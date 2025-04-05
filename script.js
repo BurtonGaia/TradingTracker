@@ -297,9 +297,33 @@ async function updateCurrentPrices() {
     renderWatchlist();
     renderActiveAlerts();
 }
+// Function to render the watchlist based on the current interface mode
+function renderWatchlist() {
+    if (currentInterfaceMode === 'simple') {
+        watchlistSimple.innerHTML = '';
+        trackedTickers.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.classList.toggle('alerting', item.isAlerting);
+            listItem.innerHTML = `
+                <span class="ticker">${item.ticker}</span>
+                <span>${item.name}</span>
+                <span>${item.currentPrice !== null ? item.currentPrice : 'N/A'}</span>
+                <span>${item.price1}</span>
+                <span>${item.price2}</span>
+                <button class="delete-button" data-ticker="${item.ticker}">&times;</button>
+            `;
+            watchlistSimple.appendChild(listItem);
+        });
 
-// Function to render active alerts
-function renderActiveAlerts() {
+        const deleteButtons = watchlistSimple.querySelectorAll('.delete-button');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tickerToDelete = this.dataset.ticker;
+                removeTicker(tickerToDelete);
+            });
+        });
+    }
+    function renderActiveAlerts() {
     activeAlertsListSimple.innerHTML = '';
     activeAlertsListDetailed.innerHTML = '';
     for (const ticker in activeAlerts) {
@@ -331,31 +355,3 @@ fetchAllSymbols().then(() => {
     renderActiveAlerts();
     setInterval(updateCurrentPrices, 10000);
 });
-
-
-// Function to render the watchlist based on the current interface mode
-function renderWatchlist() {
-    if (currentInterfaceMode === 'simple') {
-        watchlistSimple.innerHTML = '';
-        trackedTickers.forEach(item => {
-            const listItem = document.createElement('li');
-            listItem.classList.toggle('alerting', item.isAlerting);
-            listItem.innerHTML = `
-                <span class="ticker">${item.ticker}</span>
-                <span>${item.name}</span>
-                <span>${item.currentPrice !== null ? item.currentPrice : 'N/A'}</span>
-                <span>${item.price1}</span>
-                <span>${item.price2}</span>
-                <button class="delete-button" data-ticker="${item.ticker}">&times;</button>
-            `;
-            watchlistSimple.appendChild(listItem);
-        });
-
-        const deleteButtons = watchlistSimple.querySelectorAll('.delete-button');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const tickerToDelete = this.dataset.ticker;
-                removeTicker(tickerToDelete);
-            });
-        });
-    }
