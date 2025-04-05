@@ -6,7 +6,7 @@
     <title>Dashboard de Trading</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Styles supplémentaires pour les score cards (peuvent être intégrés dans style.css) */
+        /* Styles supplémentaires pour les score cards */
         .score-cards-section {
             display: flex;
             flex-wrap: wrap;
@@ -25,6 +25,10 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+        }
+
+        .score-card.alerting {
+            border-left: 5px solid #e53e3e;
         }
 
         .score-card-header {
@@ -50,11 +54,33 @@
             width: 100%;
             height: 150px;
         }
+
+        .score-card .delete-button {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            font-size: 1em;
+            cursor: pointer;
+            padding: 0;
+            align-self: flex-end; /* Aligner le bouton de suppression en bas à droite */
+            margin-top: 10px;
+        }
+
+        .score-card .delete-button:hover {
+            color: #c53030;
+        }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
         <header>
+            <div class="display-mode-selector">
+                <label for="display-mode">Affichage:</label>
+                <select id="display-mode">
+                    <option value="list" selected>Liste</option>
+                    <option value="cards">Score Cards</option>
+                </select>
+            </div>
             <h1>Mon Dashboard de Trading</h1>
             <button id="toggle-add-ticker" aria-label="Ajouter un nouveau ticker">+</button>
         </header>
@@ -98,7 +124,7 @@
             <section class="score-cards-section" style="display: none;">
                 <h2>Ma Watchlist (Score Cards)</h2>
                 <div id="score-cards-container">
-                    </div>
+                </div>
             </section>
 
             <aside class="alerts-panel">
