@@ -1,41 +1,26 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trading Dashboard</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Trading Dashboard</h1>
-    </header>
-    <section class="input-section">
-      <form id="stockForm">
-        <input type="text" id="symbol" placeholder="Ticker (ex: AAPL)" required>
-        <input type="number" id="price1" placeholder="Seuil bas" step="0.01" required>
-        <input type="number" id="price2" placeholder="Seuil haut" step="0.01" required>
-        <button type="submit">Ajouter</button>
-      </form>
-    </section>
-    <section class="dashboard">
-      <table id="stockTable">
-        <thead>
-          <tr>
-            <th>Nom</th>
-            <th>Ticker</th>
-            <th>Prix Actuel</th>
-            <th>Seuil Bas</th>
-            <th>Seuil Haut</th>
-            <th>Combo (Weekly)</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="stockList"></tbody>
-      </table>
-    </section>
-  </div>
-  <script src="script.js"></script>
+    <div class="container">
+        <h1>Trading Dashboard</h1>
+        
+        <!-- Formulaire pour ajouter un ticker -->
+        <div class="ticker-form">
+            <input type="text" id="ticker" placeholder="Ticker (ex: AAPL)" required>
+            <input type="number" id="price1" placeholder="Prix 1" step="0.01" required>
+            <input type="number" id="price2" placeholder="Prix 2" step="0.01" required>
+            <button onclick="addTicker()">Ajouter</button>
+        </div>
+
+        <!-- Liste des tickers -->
+        <div class="ticker-list" id="tickerList"></div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
