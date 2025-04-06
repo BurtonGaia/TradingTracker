@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -22,11 +23,18 @@
 
   <script>
     const API_KEY = 'cvopq21r01qihjtq7uagcvopq21r01qihjtq7ub0';
-    const tickers = ['AAPL', 'MSFT', 'GOOGL', '^GSPC', '^IXIC', '^DJI'];
+    
+    // Remplace les tickers Yahoo par ceux de Finnhub
+    const tickers = [
+      'AAPL', 'MSFT', 'GOOGL',
+      'SPX',     // anciennement ^GSPC
+      'IXIC',    // anciennement ^IXIC
+      'DJI'      // anciennement ^DJI
+    ];
+
     const intervals = {
       '15': 'M15 MA50',
       '60': 'H1 MA50',
-      '240': 'H4 MA50',
       'D': 'D MA50',
       'W': 'W MA50',
       'M': 'M MA50'
@@ -34,21 +42,29 @@
 
     async function getMA50(ticker, resolution) {
       const now = Math.floor(Date.now() / 1000);
-      const past = now - 60 * 60 * 24 * 90;
+      const past = now - 60 * 60 * 24 * 90; // 90 jours
       const url = `https://finnhub.io/api/v1/stock/candle?symbol=${ticker}&resolution=${resolution}&from=${past}&to=${now}&token=${API_KEY}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.s !== 'ok' || data.c.length < 50) return 'N/A';
-      const closes = data.c.slice(-50);
-      const ma50 = closes.reduce((a, b) => a + b, 0) / closes.length;
-      return ma50.toFixed(2);
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.s !== 'ok' || !data.c || data.c.length < 50) return 'N/A';
+        const closes = data.c.slice(-50);
+        const ma50 = closes.reduce((a, b) => a + b, 0) / closes.length;
+        return ma50.toFixed(2);
+      } catch (err) {
+        return 'N/A';
+      }
     }
 
     async function getQuote(ticker) {
       const url = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${API_KEY}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      return data.c ? data.c.toFixed(2) : 'N/A';
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.c ? data.c.toFixed(2) : 'N/A';
+      } catch (err) {
+        return 'N/A';
+      }
     }
 
     async function loadDashboard() {
@@ -60,6 +76,7 @@
         const maResults = await Promise.all(
           Object.keys(intervals).map(res => getMA50(ticker, res))
         );
+
         rows.push(`<tr>
           <td>${ticker}</td>
           <td>${current}</td>
@@ -88,3 +105,4 @@
   </script>
 </body>
 </html>
+```
